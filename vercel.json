@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "headers": [
+    {
+      "source": "/(.*)\\.jsx",
+      "headers": [{ "key": "Content-Type", "value": "application/javascript; charset=utf-8" }]
+    },
+    {
+      "source": "/(.*)\\.js",
+      "headers": [{ "key": "Content-Type", "value": "application/javascript; charset=utf-8" }]
+    }
+  ]
+}

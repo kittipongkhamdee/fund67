@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>คู่มือ Deploy · กองทุนรุ่น Financial Management</title>
+<link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#F4F3EF;--surface:#fff;--ink:#16181D;--ink2:#54565E;--mut:#8A8C93;
+  --line:#E7E5DE;--brand:#0B5FFF;--brand-bg:#E9F0FF;--brand-tint:#F2F6FF;
+  --ok:#0E8F5B;--ok-bg:#E2F3EA;--warn:#B7791F;--warn-bg:#FBF0DC;
+  --bad:#D1453B;--bad-bg:#FBE7E5;--mut-bg:#EFEEE9;
+  --r:18px;--num:'Space Grotesk',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Anuphan',-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
+.num{font-family:var(--num)}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+code{font-family:'SF Mono','Fira Code',monospace;font-size:.9em;background:var(--mut-bg);padding:2px 7px;border-radius:5px;color:var(--ink)}
+pre{background:#16181D;color:#e8e6e0;padding:20px;border-radius:14px;overflow-x:auto;font-size:13.5px;line-height:1.6;font-family:'SF Mono','Fira Code',monospace}
+pre .c{color:#6B8F71}pre .k{color:#79B8FF}pre .s{color:#F8C555}
+
+/* layout */
+.wrap{max-width:860px;margin:0 auto;padding:40px 24px 80px}
+h1{font-size:30px;font-weight:800;letter-spacing:-.02em;line-height:1.2}
+h2{font-size:20px;font-weight:800;letter-spacing:-.015em;margin:36px 0 14px}
+h3{font-size:15.5px;font-weight:700;margin:20px 0 8px}
+p{font-size:15px;color:var(--ink2);margin-bottom:12px}
+ul,ol{padding-left:20px;color:var(--ink2);font-size:15px}
+li{margin-bottom:6px}
+.section{border-top:2px solid var(--line);padding-top:30px;margin-top:30px}
+
+/* hero */
+.hero{background:linear-gradient(135deg,#0B5FFF,#3D82FF);color:#fff;border-radius:22px;padding:32px;margin-bottom:32px;position:relative;overflow:hidden}
+.hero::after{content:"";position:absolute;inset:0;background:radial-gradient(90% 80% at 90% 0%,rgba(255,255,255,.2),transparent 60%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:20px;padding:5px 13px;font-size:13px;font-weight:600;margin-bottom:14px}
+
+/* card */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.card+.card{margin-top:12px}
+
+/* comparison table */
+.tbl-wrap{overflow-x:auto;margin:12px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;padding:10px 12px;font-size:12px;font-weight:700;color:var(--mut);border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:12px;font-weight:700;white-space:nowrap}
+.tag-ok{background:var(--ok-bg);color:var(--ok)}
+.tag-warn{background:var(--warn-bg);color:var(--warn)}
+.tag-brand{background:var(--brand-bg);color:var(--brand)}
+.tag-bad{background:var(--bad-bg);color:var(--bad)}
+.tag-mut{background:var(--mut-bg);color:var(--mut)}
+.rec-row td{background:#F2F6FF;font-weight:600}
+.rec-row td:first-child{border-left:3px solid var(--brand)}
+
+/* steps */
+.step{display:flex;gap:14px;margin-bottom:18px}
+.step-n{width:32px;height:32px;border-radius:10px;background:var(--brand);color:#fff;display:grid;place-items:center;font-weight:800;font-size:14px;flex-shrink:0;margin-top:2px;font-family:var(--num)}
+.step-body h4{font-size:15px;font-weight:700;margin-bottom:5px}
+.step-body p{margin:0;font-size:14px}
+
+/* pills row */
+.pills{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.pill{display:flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:8px 13px;font-size:13.5px;font-weight:600}
+.pill-ic{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;font-weight:800;font-size:11px;color:#fff;flex-shrink:0}
+
+/* arch diagram */
+.arch{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.arch-box{border:1.5px solid var(--line);border-radius:14px;padding:14px;text-align:center}
+.arch-box.brand{border-color:#C5D6FF;background:var(--brand-tint)}
+.arch-box.ok{border-color:#BCE6CD;background:var(--ok-bg)}
+.arch-box.warn{border-color:#F5DFA2;background:var(--warn-bg)}
+.arch-ic{font-size:22px;margin-bottom:6px}
+.arch-box h4{font-size:13px;font-weight:700}
+.arch-box p{font-size:11.5px;color:var(--mut);margin:3px 0 0}
+.arrow{display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:22px;padding:0 4px}
+
+/* callout */
+.callout{border-radius:14px;padding:14px 16px;margin:12px 0;display:flex;gap:11px;align-items:flex-start}
+.callout-ok{background:var(--ok-bg);border:1px solid #BCE6CD}
+.callout-warn{background:var(--warn-bg);border:1px solid #F5DFA2}
+.callout-brand{background:var(--brand-tint);border:1px solid #C5D6FF}
+.callout-ic{font-size:18px;margin-top:1px;flex-shrink:0}
+.callout h4{font-size:14px;font-weight:700;margin-bottom:3px}
+.callout p{font-size:13px;margin:0;line-height:1.5}
+
+@media(max-width:600px){.arch{grid-template-columns:1fr}.arrow{transform:rotate(90deg)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- hero -->
+  <div class="hero">
+    <div class="hero-badge">🚀 Deployment Guide v1.0</div>
+    <h1 style="font-size:24px">วิเคราะห์ Database + Hosting<br>สำหรับกองทุนรุ่น 67</h1>
+    <p style="color:rgba(255,255,255,.85);font-size:14.5px;margin-top:10px;margin-bottom:0">ตัวเลือกที่ใช้ฟรีได้จริง · แนะนำ Stack ที่ดีที่สุด · คู่มือ Deploy ทีละขั้นตอน</p>
+  </div>
+
+  <!-- summary -->
+  <div class="callout callout-brand">
+    <div class="callout-ic">💡</div>
+    <div>
+      <h4>สรุปแนะนำ: 2 เส้นทาง</h4>
+      <p><strong>ทันที (Phase 1):</strong> Deploy เว็บที่มีอยู่ไปยัง <strong>Vercel</strong> — ฟรี ใช้งานได้ใน 5 นาที ข้อมูลยังเป็น mock<br>
+      <strong>Production จริง (Phase 2):</strong> ต่อ <strong>Supabase</strong> (Database + Auth + Storage) + <strong>Vercel</strong> — ฟรีทั้งคู่ รองรับ 50,000 users/เดือน</p>
+    </div>
+  </div>
+
+  <!-- ─── Database Options ─── -->
+  <div class="section">
+    <h2>🗄 เปรียบเทียบ Database ฟรี</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>ชื่อ</th><th>ประเภท</th><th>Storage ฟรี</th><th>Auth</th><th>Storage ไฟล์</th><th>ความเหมาะสม</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="rec-row">
+            <td><strong>⭐ Supabase</strong><br><small><a href="https://supabase.com" target="_blank">supabase.com</a></small></td>
+            <td>PostgreSQL</td>
+            <td class="num"><strong>500 MB</strong></td>
+            <td><span class="tag tag-ok">✓ มีในตัว</span></td>
+            <td><span class="tag tag-ok">1 GB</span></td>
+            <td><span class="tag tag-brand">แนะนำ</span></td>
+          </tr>
+          <tr>
+            <td><strong>Firebase</strong><br><small><a href="https://firebase.google.com" target="_blank">firebase.google.com</a></small></td>
+            <td>Firestore (NoSQL)</td>
+            <td class="num">1 GB</td>
+            <td><span class="tag tag-ok">✓ มีในตัว</span></td>
+            <td><span class="tag tag-ok">5 GB</span></td>
+            <td><span class="tag tag-ok">ดีมาก</span></td>
+          </tr>
+          <tr>
+            <td><strong>Neon</strong><br><small><a href="https://neon.tech" target="_blank">neon.tech</a></small></td>
+            <td>PostgreSQL</td>
+            <td class="num">512 MB</td>
+            <td><span class="tag tag-warn">ไม่มี</span></td>
+            <td><span class="tag tag-warn">ไม่มี</span></td>
+            <td><span class="tag tag-mut">DB เท่านั้น</span></td>
+          </tr>
+          <tr>
+            <td><strong>MongoDB Atlas</strong><br><small><a href="https://mongodb.com" target="_blank">mongodb.com</a></small></td>
+            <td>MongoDB (NoSQL)</td>
+            <td class="num">512 MB</td>
+            <td><span class="tag tag-warn">ไม่มี</span></td>
+            <td><span class="tag tag-warn">ไม่มี</span></td>
+            <td><span class="tag tag-mut">ซับซ้อนกว่า</span></td>
+          </tr>
+          <tr>
+            <td><strong>PlanetScale</strong></td>
+            <td>MySQL</td>
+            <td>—</td>
+            <td><span class="tag tag-bad">ยกเลิก free tier</span></td>
+            <td><span class="tag tag-bad">ยกเลิก</span></td>
+            <td><span class="tag tag-bad">ไม่แนะนำ</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout callout-ok" style="margin-top:14px">
+      <div class="callout-ic">✅</div>
+      <div>
+        <h4>ทำไมถึงแนะนำ Supabase?</h4>
+        <p>Supabase = PostgreSQL + Auth + Storage + Realtime ในแพ็กเดียว รองรับ <strong>50,000 MAU ฟรี</strong>, ใช้ SQL ได้เลย, มี JS Client Library เชื่อมกับเว็บนี้ได้ตรง, Storage เก็บสลิปได้ฟรี 1 GB</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Hosting Options ─── -->
+  <div class="section">
+    <h2>🌐 เปรียบเทียบ Hosting ฟรี</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr><th>ชื่อ</th><th>ประเภท</th><th>Bandwidth</th><th>Custom Domain</th><th>Deploy จาก</th><th>ความเหมาะสม</th></tr>
+        </thead>
+        <tbody>
+          <tr class="rec-row">
+            <td><strong>⭐ Vercel</strong><br><small><a href="https://vercel.com" target="_blank">vercel.com</a></small></td>
+            <td>Static + Serverless</td>
+            <td class="num"><strong>100 GB</strong></td>
+            <td><span class="tag tag-ok">✓ ฟรี</span></td>
+            <td>GitHub / GitLab</td>
+            <td><span class="tag tag-brand">แนะนำ</span></td>
+          </tr>
+          <tr>
+            <td><strong>Netlify</strong><br><small><a href="https://netlify.com" target="_blank">netlify.com</a></small></td>
+            <td>Static + Serverless</td>
+            <td class="num">100 GB</td>
+            <td><span class="tag tag-ok">✓ ฟรี</span></td>
+            <td>GitHub / Drag &amp; Drop</td>
+            <td><span class="tag tag-ok">ดีมาก</span></td>
+          </tr>
+          <tr>
+            <td><strong>GitHub Pages</strong><br><small><a href="https://pages.github.com" target="_blank">pages.github.com</a></small></td>
+            <td>Static only</td>
+            <td class="num">Unlimited</td>
+            <td><span class="tag tag-ok">✓ ฟรี</span></td>
+            <td>GitHub repo</td>
+            <td><span class="tag tag-ok">ดี (static)</span></td>
+          </tr>
+          <tr>
+            <td><strong>Railway</strong><br><small><a href="https://railway.app" target="_blank">railway.app</a></small></td>
+            <td>Full-stack</td>
+            <td>—</td>
+            <td><span class="tag tag-ok">✓ ฟรี</span></td>
+            <td>GitHub</td>
+            <td><span class="tag tag-warn">$5 credit/เดือน</span></td>
+          </tr>
+          <tr>
+            <td><strong>Render</strong><br><small><a href="https://render.com" target="_blank">render.com</a></small></td>
+            <td>Full-stack</td>
+            <td>100 GB</td>
+            <td><span class="tag tag-ok">✓ ฟรี</span></td>
+            <td>GitHub</td>
+            <td><span class="tag tag-warn">Sleep ถ้าไม่ใช้ 15 นาที</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ─── Phase 1: Deploy NOW ─── -->
+  <div class="section">
+    <h2>⚡ Phase 1 — Deploy เว็บตอนนี้เลย (5 นาที)</h2>
+    <p>เว็บที่มีอยู่เป็น <strong>Static HTML</strong> ล้วน — Push ขึ้น GitHub แล้ว connect Vercel ได้เลย</p>
+
+    <div class="callout callout-warn">
+      <div class="callout-ic">⚠️</div>
+      <div><h4>ต้องการ GitHub Account</h4><p>ถ้ายังไม่มีให้สมัครฟรีที่ <a href="https://github.com" target="_blank">github.com</a> ก่อน</p></div>
+    </div>
+
+    <h3>วิธี Deploy ไป Vercel</h3>
+    <div class="step">
+      <div class="step-n">1</div>
+      <div class="step-body">
+        <h4>สร้าง GitHub Repository</h4>
+        <p>ไปที่ <a href="https://github.com/new" target="_blank">github.com/new</a> → ตั้งชื่อ <code>class-fund-67</code> → Private → Create</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">2</div>
+      <div class="step-body">
+        <h4>อัปโหลดไฟล์โปรเจกต์</h4>
+        <p>คลิก "Add file" → "Upload files" แล้วลากไฟล์ทั้งหมดจากโปรเจกต์นี้ขึ้นไป (<code>Financial Management.html</code>, <code>*.jsx</code>, <code>data.js</code>, <code>vercel.json</code>)</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
+      <div class="step-body">
+        <h4>Connect Vercel</h4>
+        <p>ไปที่ <a href="https://vercel.com/new" target="_blank">vercel.com/new</a> → "Import Git Repository" → เลือก repo ที่สร้างไว้ → Deploy</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">4</div>
+      <div class="step-body">
+        <h4>ตั้ง Root Directory</h4>
+        <p>ใน Vercel Settings → ตั้ง "Output Directory" เป็น <code>./</code> และไฟล์หลักเป็น <code>Financial Management.html</code></p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">5</div>
+      <div class="step-body">
+        <h4>เสร็จ! ได้ URL ฟรี</h4>
+        <p>Vercel จะให้ URL เช่น <code>class-fund-67.vercel.app</code> — แชร์ให้นักศึกษาได้เลย</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Phase 2: Full Production ─── -->
+  <div class="section">
+    <h2>🏗 Phase 2 — Production จริง (Supabase + Vercel)</h2>
+    <p>เพิ่ม real database, real auth, และ slip image storage</p>
+
+    <!-- architecture -->
+    <h3>Architecture</h3>
+    <div class="arch">
+      <div class="arch-box brand">
+        <div class="arch-ic">🌐</div>
+        <h4>Vercel (Hosting)</h4>
+        <p>HTML + JSX<br>Static CDN<br>ฟรี 100GB BW</p>
+      </div>
+      <div class="arch-box ok">
+        <div class="arch-ic">🗄</div>
+        <h4>Supabase (Backend)</h4>
+        <p>PostgreSQL DB<br>Auth (Login)<br>Storage (สลิป)</p>
+      </div>
+      <div class="arch-box warn">
+        <div class="arch-ic">🤖</div>
+        <h4>AI (ตรวจสลิป)</h4>
+        <p>Google Vision API<br>หรือ Claude API<br>(ค่าใช้จ่ายตามปริมาณ)</p>
+      </div>
+    </div>
+
+    <h3>สิ่งที่ต้องทำใน Phase 2</h3>
+    <div class="step">
+      <div class="step-n">1</div>
+      <div class="step-body">
+        <h4>สร้าง Supabase Project</h4>
+        <p>ไปที่ <a href="https://supabase.com" target="_blank">supabase.com</a> → New Project → ตั้งชื่อ <code>class-fund-67</code> → Region: Singapore (ap-southeast-1)</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">2</div>
+      <div class="step-body">
+        <h4>รัน SQL Schema</h4>
+        <p>ไปที่ SQL Editor ใน Supabase Dashboard → วาง <code>supabase-schema.sql</code> (ไฟล์ที่สร้างไว้) → Run</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">3</div>
+      <div class="step-body">
+        <h4>เพิ่ม Supabase JS Client ในเว็บ</h4>
+        <p>เพิ่ม <code>@supabase/supabase-js</code> แล้วแทนที่ข้อมูล mock ใน <code>data.js</code> ด้วย Supabase queries</p>
+        <pre><code><span class="c">// ตัวอย่าง: ดึงรายชื่อนักศึกษา</span>
+<span class="k">import</span> { createClient } <span class="k">from</span> <span class="s">'@supabase/supabase-js'</span>
+<span class="k">const</span> supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+<span class="k">const</span> { data } = <span class="k">await</span> supabase
+  .from(<span class="s">'students'</span>)
+  .select(<span class="s">'*'</span>)
+  .order(<span class="s">'id'</span>)</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">4</div>
+      <div class="step-body">
+        <h4>ตั้ง Auth สำหรับ Login</h4>
+        <p>ใช้ Supabase Auth แทน mock login — นักศึกษา login ด้วย student ID, admin login ด้วย email+password ผ่าน Supabase Dashboard</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-n">5</div>
+      <div class="step-body">
+        <h4>เพิ่ม Environment Variables ใน Vercel</h4>
+        <p>ใน Vercel → Settings → Environment Variables → เพิ่ม <code>SUPABASE_URL</code> และ <code>SUPABASE_ANON_KEY</code> (หาได้ใน Supabase Settings)</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Cost Summary ─── -->
+  <div class="section">
+    <h2>💰 สรุปค่าใช้จ่าย (ฟรีทั้งหมด)</h2>
+    <div class="pills">
+      <div class="pill"><span class="pill-ic" style="background:#0B5FFF">V</span>Vercel — ฟรีตลอด (Hobby plan)</div>
+      <div class="pill"><span class="pill-ic" style="background:#3ECF8E">S</span>Supabase — ฟรี 500MB + 50K users</div>
+      <div class="pill"><span class="pill-ic" style="background:#333">G</span>GitHub — ฟรี (private repo)</div>
+    </div>
+    <div class="callout callout-warn" style="margin-top:14px">
+      <div class="callout-ic">💡</div>
+      <div>
+        <h4>เมื่อไหร่ถึงต้องจ่าย?</h4>
+        <p>กองทุนห้อง 28 คน ใช้ฟรีได้หลายปีครับ — Supabase จะเริ่มคิดเงินเมื่อ DB เกิน 500MB หรือ users เกิน 50,000/เดือน ซึ่งไม่มีทางเกินสำหรับกองทุนห้อง plan ถัดไปอยู่ที่ $25/เดือน</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Files Summary ─── -->
+  <div class="section">
+    <h2>📁 ไฟล์ที่สร้างไว้ให้แล้ว</h2>
+    <div class="card">
+      <table>
+        <thead><tr><th>ไฟล์</th><th>ใช้ทำอะไร</th><th>สถานะ</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>vercel.json</code></td>
+            <td>Config สำหรับ deploy บน Vercel (MIME types สำหรับ JSX)</td>
+            <td><span class="tag tag-ok">พร้อมใช้</span></td>
+          </tr>
+          <tr>
+            <td><code>netlify.toml</code></td>
+            <td>Config สำหรับ deploy บน Netlify (ทางเลือก)</td>
+            <td><span class="tag tag-ok">พร้อมใช้</span></td>
+          </tr>
+          <tr>
+            <td><code>supabase-schema.sql</code></td>
+            <td>SQL สร้าง tables ทั้งหมด + ข้อมูลเริ่มต้น</td>
+            <td><span class="tag tag-brand">Phase 2</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ─── Next Steps ─── -->
+  <div class="section">
+    <h2>🗺 ขั้นตอนต่อไปที่แนะนำ</h2>
+    <ol>
+      <li>สมัคร <a href="https://github.com" target="_blank">GitHub</a> + <a href="https://vercel.com" target="_blank">Vercel</a> (ฟรี ใช้เวลา 5 นาที)</li>
+      <li>อัปโหลดไฟล์โปรเจกต์นี้ขึ้น GitHub repo</li>
+      <li>Connect Vercel → ได้ URL สาธารณะ แชร์ให้นักศึกษาได้ทันที</li>
+      <li>สมัคร <a href="https://supabase.com" target="_blank">Supabase</a> (ฟรี)</li>
+      <li>รัน <code>supabase-schema.sql</code> เพื่อสร้าง database</li>
+      <li>แจ้งให้นักพัฒนา (หรือผม) เชื่อม Supabase กับเว็บ</li>
+    </ol>
+    <div class="callout callout-brand" style="margin-top:20px">
+      <div class="callout-ic">👨‍💻</div>
+      <div>
+        <h4>ต้องการให้ช่วยเชื่อม Supabase?</h4>
+        <p>แจ้งมาได้เลยครับ — เมื่อ Supabase project พร้อมแล้ว จะปรับโค้ดให้ดึงข้อมูลจริง, login จริง, และเก็บสลิปจริงได้เลย</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="text-align:center;margin-top:40px;color:var(--mut);font-size:13px">
+    คู่มือนี้จัดทำสำหรับกองทุนรุ่น 67 · ห้อง IT-A · มิถุนายน 2568
+  </div>
+</div>
+</body>
+</html>
