@@ -11,5 +11,5 @@
 # Redirect root to main file
 [[redirects]]
   from = "/"
-  to = "/Financial Management.html"
+  to = "/index.html"
   status = 200
