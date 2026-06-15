@@ -10,10 +10,10 @@ async function initializeFromSupabase() {
     // Fetch all required data from Supabase
     const [students, months, accounts, ledger, queue] = await Promise.all([
       API.fetchStudents(),
-      API.fetchMonthPeriods(ACADEMIC_YEAR_ID),
-      API.fetchAccounts(ACADEMIC_YEAR_ID),
-      API.fetchLedger(null, 50), // will filter by account in component
-      API.fetchVerificationQueue(ACADEMIC_YEAR_ID),
+      API.fetchMonthPeriods(),
+      API.fetchAccounts(),
+      API.fetchLedger(null, 50),
+      API.fetchVerificationQueue(),
     ]);
 
     // Find current month (latest month or default to index 7 = ม.ค.)

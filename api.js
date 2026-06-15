@@ -53,12 +53,11 @@ const API = {
   },
 
   // --- Month Periods ---
-  async fetchMonthPeriods(academicYearId) {
+  async fetchMonthPeriods() {
     const { data, error } = await supabase
       .from("month_periods")
       .select("*")
-      .eq("academic_year_id", academicYearId)
-      .order("month_number", { ascending: true });
+      .order("period_index", { ascending: true });
     if (error) throw error;
     return data || [];
   },
@@ -67,7 +66,7 @@ const API = {
   async fetchPayments(studentId) {
     const { data, error } = await supabase
       .from("payments")
-      .select("*, month_periods(month_key, full_month_name)")
+      .select("*, month_periods(month_key, month_full)")
       .eq("student_id", studentId)
       .order("created_at", { ascending: true });
     if (error) throw error;
@@ -75,7 +74,7 @@ const API = {
   },
 
   async fetchAllPayments(filters = {}) {
-    let query = supabase.from("payments").select("*, students(id, name), month_periods(month_key, full_month_name)");
+    let query = supabase.from("payments").select("*, students(id, name), month_periods(month_key, month_full)");
 
     if (filters.status) {
       query = query.eq("status", filters.status);
@@ -125,10 +124,10 @@ const API = {
     return data[0];
   },
 
-  async fetchVerificationQueue(academicYearId) {
+  async fetchVerificationQueue() {
     const { data, error } = await supabase
       .from("payments")
-      .select("*, students(id, name), month_periods(full_month_name)")
+      .select("*, students(id, name), month_periods(month_full)")
       .eq("status", "pending")
       .order("created_at", { ascending: true })
       .limit(50);
@@ -150,24 +149,24 @@ const API = {
   },
 
   // --- Bank Accounts ---
-  async fetchAccounts(academicYearId) {
+  async fetchAccounts() {
     const { data, error } = await supabase
       .from("bank_accounts")
       .select("*")
-      .eq("academic_year_id", academicYearId)
-      .order("is_active", { ascending: false });
+      .order("status", { ascending: false });
     if (error) throw error;
     return data || [];
   },
 
   // --- Transactions / Ledger ---
   async fetchLedger(accountId, limit = 20) {
-    const { data, error } = await supabase
+    let query = supabase
       .from("transactions")
       .select("*")
-      .eq("account_id", accountId)
       .order("created_at", { ascending: false })
       .limit(limit);
+    if (accountId != null) query = query.eq("account_id", accountId);
+    const { data, error } = await query;
     if (error) throw error;
     return data || [];
   },
