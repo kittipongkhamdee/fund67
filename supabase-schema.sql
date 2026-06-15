@@ -7,7 +7,6 @@
 CREATE TABLE students (
   id          TEXT PRIMARY KEY,           -- รหัสนักศึกษา '6710405001'
   name        TEXT NOT NULL,
-  nick        TEXT,
   class_id    TEXT DEFAULT 'IT-A',
   avatar_hue  INTEGER DEFAULT 220,
   created_at  TIMESTAMPTZ DEFAULT NOW()
@@ -125,7 +124,11 @@ VALUES
   ('ไทยพาณิชย์','SCB','123-4-56789-0','098-765-4321','น.ส. ปาณิสรา รัตนพร (เหรัญญิก)','active','#4E2A84'),
   ('กสิกรไทย','KBANK','078-2-11122-5',NULL,'นาย ธนกร ใจดี (อดีตเหรัญญิก)','archived','#0F9D58');
 
--- ── 11. Storage Bucket สำหรับสลิป ────────────────────────────
+-- ── 11. Migration: ลบ nick column ───────────────────────────
+-- รันใน Supabase SQL Editor ถ้า table students มีอยู่แล้ว
+-- ALTER TABLE students DROP COLUMN IF EXISTS nick;
+
+-- ── 12. Storage Bucket สำหรับสลิป ────────────────────────────
 -- ทำใน Supabase Dashboard > Storage > New Bucket
 -- Bucket name: "slips"  |  Public: false  |  File size limit: 5MB
 -- Allowed MIME: image/jpeg, image/png, image/webp

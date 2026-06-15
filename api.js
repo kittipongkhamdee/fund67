@@ -75,7 +75,7 @@ const API = {
   },
 
   async fetchAllPayments(filters = {}) {
-    let query = supabase.from("payments").select("*, students(id, name, nick), month_periods(month_key, full_month_name)");
+    let query = supabase.from("payments").select("*, students(id, name), month_periods(month_key, full_month_name)");
 
     if (filters.status) {
       query = query.eq("status", filters.status);
@@ -128,7 +128,7 @@ const API = {
   async fetchVerificationQueue(academicYearId) {
     const { data, error } = await supabase
       .from("payments")
-      .select("*, students(id, name, nick), month_periods(full_month_name)")
+      .select("*, students(id, name), month_periods(full_month_name)")
       .eq("status", "pending")
       .order("created_at", { ascending: true })
       .limit(50);
