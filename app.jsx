@@ -48,8 +48,8 @@ function App() {
   const { role, student } = auth;
   const items = NAV[role];
   const [title, sub] = TITLES[tab] || ["", ""];
-  const me = student || FM.me;
-  const thisStatus = paid ? "paid" : me.pays[FM.currentMonthIndex];
+  const me = student || FM.me || { name: "ผู้ดูแลระบบ", id: "ADMIN001", avatarHue: 220, pays: [] };
+  const thisStatus = paid ? "paid" : (me.pays?.[FM.currentMonthIndex] ?? "unpaid");
 
   const Page = () => {
     if (role === "student") return <StudentHome paid={paid} onPay={() => setPay(true)} student={me} />;
