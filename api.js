@@ -24,6 +24,34 @@ const API = {
     return data;
   },
 
+  async createStudent(studentData) {
+    const { data, error } = await supabase
+      .from("students")
+      .insert([studentData])
+      .select();
+    if (error) throw error;
+    return data[0];
+  },
+
+  async updateStudent(studentId, updates) {
+    const { data, error } = await supabase
+      .from("students")
+      .update(updates)
+      .eq("id", studentId)
+      .select();
+    if (error) throw error;
+    return data[0];
+  },
+
+  async deleteStudent(studentId) {
+    const { data, error } = await supabase
+      .from("students")
+      .delete()
+      .eq("id", studentId);
+    if (error) throw error;
+    return true;
+  },
+
   // --- Month Periods ---
   async fetchMonthPeriods(academicYearId) {
     const { data, error } = await supabase

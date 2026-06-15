@@ -369,4 +369,203 @@ function AdminVerify() {
   );
 }
 
-Object.assign(window, { AdminDashboard, AdminPeople, AdminVerify, BarChart });
+/* ---------- Admin student management ---------- */
+function AdminStudents() {
+  const [students, setStudents] = useState(FM.students || []);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [formData, setFormData] = useState({ id: "", name: "", nick: "", avatarHue: 220 });
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState("");
+
+  const resetForm = () => {
+    setFormData({ id: "", name: "", nick: "", avatarHue: 220 });
+    setEditId(null);
+  };
+
+  const handleAddClick = () => {
+    resetForm();
+    setFormOpen(true);
+  };
+
+  const handleEditClick = (student) => {
+    setFormData({
+      id: student.id,
+      name: student.name,
+      nick: student.nick || student.name.split(" ")[0],
+      avatarHue: student.avatarHue || 220,
+    });
+    setEditId(student.id);
+    setFormOpen(true);
+  };
+
+  const handleSubmit = async () => {
+    if (!formData.id.trim() || !formData.name.trim()) {
+      setToast("กรุณากรอกรหัสนักศึกษาและชื่อ");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      if (editId) {
+        await API.updateStudent(editId, {
+          name: formData.name,
+          nick: formData.nick,
+          avatarHue: formData.avatarHue,
+        });
+      } else {
+        await API.createStudent({
+          id: formData.id,
+          name: formData.name,
+          nick: formData.nick,
+          avatarHue: formData.avatarHue,
+        });
+      }
+
+      // Refresh student list
+      const updated = await API.fetchStudents();
+      setStudents(updated);
+      setFormOpen(false);
+      resetForm();
+      setToast(editId ? "แก้ไขข้อมูลสำเร็จ" : "เพิ่มนักศึกษาสำเร็จ");
+      setTimeout(() => setToast(""), 2000);
+    } catch (error) {
+      console.error("Error saving student:", error);
+      setToast("เกิดข้อผิดพลาด: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (studentId) => {
+    if (!confirm("ยืนยันการลบนักศึกษานี้?")) return;
+
+    setLoading(true);
+    try {
+      await API.deleteStudent(studentId);
+      const updated = await API.fetchStudents();
+      setStudents(updated);
+      setToast("ลบนักศึกษาสำเร็จ");
+      setTimeout(() => setToast(""), 2000);
+    } catch (error) {
+      console.error("Error deleting student:", error);
+      setToast("เกิดข้อผิดพลาด: " + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div>
+          <div style={{ fontSize: 16, fontWeight: 700 }}>รายชื่อนักศึกษา ({students.length})</div>
+          <div style={{ fontSize: 13, color: "var(--mut)", marginTop: 4 }}>จัดการข้อมูลนักศึกษาในระบบ</div>
+        </div>
+        <button className="btn btn-primary btn-sm" onClick={handleAddClick} disabled={loading}>
+          <Icon name="plus" size={16} stroke={2.4} /> เพิ่มนักศึกษา
+        </button>
+      </div>
+
+      {/* Student List */}
+      {students.length > 0 && (
+        <div className="card">
+          <div className="tbl-wrap">
+            <table className="tbl">
+              <thead>
+                <tr>
+                  <th>รหัสนักศึกษา</th>
+                  <th>ชื่อ-นามสกุล</th>
+                  <th>ชื่อเรียน</th>
+                  <th style={{ textAlign: "right" }}>จัดการ</th>
+                </tr>
+              </thead>
+              <tbody>
+                {students.map((s) => (
+                  <tr key={s.id}>
+                    <td><span className="sid">{s.id}</span></td>
+                    <td style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <Avatar name={s.name} hue={s.avatarHue || 220} size={32} />
+                      <div>{s.name}</div>
+                    </td>
+                    <td>{s.nick || s.name.split(" ")[0]}</td>
+                    <td style={{ textAlign: "right", display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                      <button className="icon-btn" onClick={() => handleEditClick(s)} disabled={loading} title="แก้ไข">
+                        <Icon name="pen" size={16} />
+                      </button>
+                      <button className="icon-btn" onClick={() => handleDelete(s.id)} disabled={loading} title="ลบ" style={{ color: "var(--bad)" }}>
+                        <Icon name="trash" size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {students.length === 0 && (
+        <div className="card" style={{ padding: 40, textAlign: "center" }}>
+          <Icon name="users" size={40} style={{ color: "var(--mut)", marginBottom: 12 }} />
+          <div style={{ color: "var(--mut)", fontSize: 14 }}>ยังไม่มีข้อมูลนักศึกษา</div>
+          <button className="btn btn-primary" style={{ marginTop: 16 }} onClick={handleAddClick}>
+            เพิ่มนักศึกษารายแรก
+          </button>
+        </div>
+      )}
+
+      {/* Add/Edit Form Sheet */}
+      <Sheet open={formOpen} onClose={() => setFormOpen(false)} title={editId ? "แก้ไขข้อมูลนักศึกษา" : "เพิ่มนักศึกษา"} maxW={500}>
+        <div style={{ display: "grid", gap: 16 }}>
+          <div>
+            <label className="login-label">รหัสนักศึกษา</label>
+            <input
+              type="text"
+              className="login-input"
+              placeholder="เช่น 6710405001"
+              value={formData.id}
+              onChange={(e) => setFormData({ ...formData, id: e.target.value })}
+              disabled={editId !== null || loading}
+            />
+          </div>
+          <div>
+            <label className="login-label">ชื่อ-นามสกุล</label>
+            <input
+              type="text"
+              className="login-input"
+              placeholder="เช่น นายกันต์ ศรีสุข"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              disabled={loading}
+            />
+          </div>
+          <div>
+            <label className="login-label">ชื่อเรียน (ห้องเรียน)</label>
+            <input
+              type="text"
+              className="login-input"
+              placeholder="เช่น กันต์"
+              value={formData.nick}
+              onChange={(e) => setFormData({ ...formData, nick: e.target.value })}
+              disabled={loading}
+            />
+          </div>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleSubmit} disabled={loading}>
+              {loading ? <Icon name="refresh" size={16} style={{ animation: "spin 1s linear infinite" }} /> : <Icon name="check" size={16} />}
+              {editId ? "บันทึก" : "เพิ่ม"}
+            </button>
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setFormOpen(false)} disabled={loading}>
+              ยกเลิก
+            </button>
+          </div>
+        </div>
+      </Sheet>
+
+      <Toast msg={toast} />
+    </div>
+  );
+}
+
+Object.assign(window, { AdminDashboard, AdminPeople, AdminVerify, AdminStudents, BarChart });

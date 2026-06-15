@@ -1,8 +1,15 @@
 /* ============================================================
-   Sample data for the class-fund (กองทุนรุ่น) prototype.
-   Plain JS — attaches FM to window. No build step.
+   Demo fallback data — only used if Supabase loading fails.
+   This data is loaded after data-loader.js, so it only initializes
+   FM if it hasn't been set already by Supabase.
    ============================================================ */
 (function () {
+  // Skip if FM was already initialized from Supabase
+  if (window.FM && window.FM.students && window.FM.students.length > 0) {
+    console.log("✓ Using Supabase data");
+    return;
+  }
+  console.log("⚠ Using demo data (Supabase not available)");
   // --- tiny seeded RNG so data is stable across re-renders ---
   function mulberry32(a) {
     return function () {
