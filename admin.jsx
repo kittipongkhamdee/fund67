@@ -374,12 +374,12 @@ function AdminStudents() {
   const [students, setStudents] = useState(FM.students || []);
   const [formOpen, setFormOpen] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ id: "", name: "", nick: "", avatarHue: 220 });
+  const [formData, setFormData] = useState({ id: "", name: "", avatarHue: 220 });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState("");
 
   const resetForm = () => {
-    setFormData({ id: "", name: "", nick: "", avatarHue: 220 });
+    setFormData({ id: "", name: "", avatarHue: 220 });
     setEditId(null);
   };
 
@@ -392,7 +392,6 @@ function AdminStudents() {
     setFormData({
       id: student.id,
       name: student.name,
-      nick: student.nick || student.name.split(" ")[0],
       avatarHue: student.avatarHue || 220,
     });
     setEditId(student.id);
@@ -410,14 +409,12 @@ function AdminStudents() {
       if (editId) {
         await API.updateStudent(editId, {
           name: formData.name,
-          nick: formData.nick,
           avatarHue: formData.avatarHue,
         });
       } else {
         await API.createStudent({
           id: formData.id,
           name: formData.name,
-          nick: formData.nick,
           avatarHue: formData.avatarHue,
         });
       }
@@ -476,7 +473,7 @@ function AdminStudents() {
                 <tr>
                   <th>รหัสนักศึกษา</th>
                   <th>ชื่อ-นามสกุล</th>
-                  <th>ชื่อเรียน</th>
+
                   <th style={{ textAlign: "right" }}>จัดการ</th>
                 </tr>
               </thead>
@@ -488,7 +485,7 @@ function AdminStudents() {
                       <Avatar name={s.name} hue={s.avatarHue || 220} size={32} />
                       <div>{s.name}</div>
                     </td>
-                    <td>{s.nick || s.name.split(" ")[0]}</td>
+
                     <td style={{ textAlign: "right", display: "flex", gap: 6, justifyContent: "flex-end" }}>
                       <button className="icon-btn" onClick={() => handleEditClick(s)} disabled={loading} title="แก้ไข">
                         <Icon name="pen" size={16} />
@@ -540,17 +537,7 @@ function AdminStudents() {
               disabled={loading}
             />
           </div>
-          <div>
-            <label className="login-label">ชื่อเรียน (ห้องเรียน)</label>
-            <input
-              type="text"
-              className="login-input"
-              placeholder="เช่น กันต์"
-              value={formData.nick}
-              onChange={(e) => setFormData({ ...formData, nick: e.target.value })}
-              disabled={loading}
-            />
-          </div>
+
           <div style={{ display: "flex", gap: 10 }}>
             <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleSubmit} disabled={loading}>
               {loading ? <Icon name="refresh" size={16} style={{ animation: "spin 1s linear infinite" }} /> : <Icon name="check" size={16} />}
