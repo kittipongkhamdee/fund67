@@ -9,6 +9,7 @@ const NAV = {
   admin: [
     { k: "dashboard", label: "สรุปยอด", icon: "home" },
     { k: "people", label: "รายบุคคล", icon: "users" },
+    { k: "students", label: "เพิ่มรหัสนักศึกษา", icon: "plus" },
     { k: "verify", label: "ตรวจสลิป", icon: "shield", badge: FM.queue.length },
     { k: "export", label: "ส่งออกรายงาน", icon: "download" },
   ],
@@ -17,6 +18,7 @@ const TITLES = {
   home: ["กองทุนของฉัน", "ชำระค่ากองทุนและติดตามสถานะรายเดือน"],
   dashboard: ["สรุปยอดกองทุน", "ภาพรวมการเงินทุกบัญชี อัปเดตแบบเรียลไทม์"],
   people: ["สรุปรายบุคคล", "สถานะการชำระของนักศึกษาทุกคน"],
+  students: ["จัดการรหัสนักศึกษา", "เพิ่ม แก้ไข ลบข้อมูลนักศึกษาในระบบ"],
   verify: ["ตรวจสอบสลิป", "AI ช่วยตรวจ คุณยืนยันขั้นสุดท้าย"],
   export: ["ส่งออกรายงาน", "ดาวน์โหลดสรุปรายเดือน / รายปีการศึกษา"],
 };
@@ -53,6 +55,7 @@ function App() {
     if (role === "student") return <StudentHome paid={paid} onPay={() => setPay(true)} student={me} />;
     if (tab === "dashboard") return <AdminDashboard />;
     if (tab === "people") return <AdminPeople />;
+    if (tab === "students") return <AdminStudents />;
     if (tab === "verify") return <AdminVerify />;
     if (tab === "export") return <ExportView />;
     return null;
