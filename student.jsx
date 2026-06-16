@@ -198,6 +198,54 @@ function PayFlow({ open, onClose, onPaid }) {
   );
 }
 
+/* ---------- Fund expenses (read-only for students) ---------- */
+function FundExpenses() {
+  const [txs, setTxs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    API.fetchAllTransactions(50)
+      .then((data) => setTxs(data.filter((t) => t.type !== "income" && t.type !== "in")))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading || txs.length === 0) return null;
+
+  const preview = txs.slice(0, 3);
+
+  return (
+    <div className="card card-pad mt16 reveal" style={{ animationDelay: ".26s" }}>
+      <div className="row between" style={{ marginBottom: 14 }}>
+        <div className="section-title">รายการถอน / ใช้จ่ายกองทุน</div>
+        {txs.length > 3 && (
+          <button className="btn btn-ghost btn-sm" onClick={() => setOpen(!open)}>
+            {open ? "ซ่อน" : "ดูทั้งหมด (" + txs.length + ")"}
+          </button>
+        )}
+      </div>
+      {(open ? txs : preview).map((tx) => {
+        const dt = tx.created_at ? new Date(tx.created_at) : null;
+        const dateStr = dt ? dt.toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }) : "";
+        const timeStr = dt ? dt.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }) : "";
+        return (
+          <div key={tx.id} className="lrow">
+            <span className="lrow-ic" style={{ background: "var(--bad-bg)", color: "var(--bad)" }}>
+              <Icon name="arrowUp" size={18} stroke={2.4} />
+            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: 13.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tx.title}</div>
+              <div className="muted" style={{ fontSize: 12 }}>{dateStr} เวลา {timeStr}</div>
+            </div>
+            <div className="num" style={{ fontWeight: 700, fontSize: 14, color: "var(--bad)" }}>-{FM.fmt(tx.amount)}</div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 /* ---------- Student Home ---------- */
 function StudentHome({ paid, onPay, student = FM.me }) {
   const me = student;
@@ -258,6 +306,23 @@ function StudentHome({ paid, onPay, student = FM.me }) {
           <div className="stat-val num">{FM.fmt(totalPaid)}</div>
         </div>
       </div>
+
+      {/* กองทุน summary */}
+      <div className="grid mt16" style={{ gridTemplateColumns: "1fr 1fr" }}>
+        <div className="card stat reveal" style={{ animationDelay: ".18s" }}>
+          <div className="stat-label"><span className="stat-ic" style={{ background: "var(--warn-bg)", color: "var(--warn)" }}><Icon name="shield" size={17} /></span>ยอดคงเหลือที่ใช้ได้</div>
+          <div className="stat-val num">{FM.fmt(FM.totals.available)}</div>
+          <div className="stat-foot">ยอดรวมกองทุน − รายจ่าย</div>
+        </div>
+        <div className="card stat reveal" style={{ animationDelay: ".22s" }}>
+          <div className="stat-label"><span className="stat-ic" style={{ background: "var(--bad-bg)", color: "var(--bad)" }}><Icon name="arrowUp" size={17} /></span>รายจ่ายสะสม</div>
+          <div className="stat-val num">{FM.fmt(FM.totals.withdrawn)}</div>
+          <div className="stat-foot">ถอน / ใช้จ่ายทั้งหมด</div>
+        </div>
+      </div>
+
+      {/* รายการถอน / ใช้จ่ายล่าสุด */}
+      <FundExpenses />
 
       {/* my months */}
       <div className="card card-pad mt16 reveal" style={{ animationDelay: ".16s" }}>
