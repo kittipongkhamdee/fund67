@@ -8,12 +8,13 @@ async function initializeFromSupabase() {
     const MONTHLY_FEE = 100;
 
     // Fetch all required data from Supabase
-    const [students, rawMonths, accounts, ledger, queue] = await Promise.all([
+    const [students, rawMonths, accounts, ledger, queue, settings] = await Promise.all([
       API.fetchStudents(),
       API.fetchMonthPeriods(),
       API.fetchAccounts(),
       API.fetchLedger(null, 50),
       API.fetchVerificationQueue(),
+      API.fetchSettings(),
     ]);
 
     // Normalize month field names (Supabase → app shorthand)
@@ -120,6 +121,7 @@ async function initializeFromSupabase() {
       thisMonth,
       fmt,
       fmtNum,
+      settings: settings || {},
       isLoading: false,
       lastUpdated: new Date().toISOString(),
     };

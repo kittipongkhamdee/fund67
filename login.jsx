@@ -3,14 +3,11 @@
    ID lookup, admin ID + password.
    ============================================================ */
 
-/*
-  ─────────────────────────────────────────────────────
-  ⚙  Admin credentials — แก้ไขได้ภายหลัง
-     รหัสผู้ดูแล (Admin ID) : ADMIN001
-     รหัสผ่าน (Password)   : 1234
-  ─────────────────────────────────────────────────────
-*/
-const ADMIN_CREDS = { id: "ADMIN001", password: "1234" };
+// Admin credentials loaded from Supabase app_settings at runtime
+const getAdminCreds = () => ({
+  id: FM.settings?.admin_id || "ADMIN001",
+  password: FM.settings?.admin_password || "1234",
+});
 
 function LoginScreen({ onLogin }) {
   const [role, setRole] = useState("student");
@@ -41,7 +38,8 @@ function LoginScreen({ onLogin }) {
   // Admin login
   const loginAdmin = () => {
     reset();
-    if (sid.trim() === ADMIN_CREDS.id && pass === ADMIN_CREDS.password) {
+    const creds = getAdminCreds();
+    if (sid.trim() === creds.id && pass === creds.password) {
       onLogin({ role: "admin" });
     } else {
       setError("รหัสผู้ดูแลหรือรหัสผ่านไม่ถูกต้อง");
@@ -49,11 +47,6 @@ function LoginScreen({ onLogin }) {
   };
 
   const confirmStudent = () => { if (found) onLogin({ role: "student", student: found }); };
-
-  const autoFill = () => {
-    if (roleRef.current === "student") { setSid("6710405004"); reset(); setFound(null); }
-    else { setSid(ADMIN_CREDS.id); setPass(ADMIN_CREDS.password); reset(); }
-  };
 
   const onKeyStudent = (e) => e.key === "Enter" && !found && lookupStudent();
   const onKeyAdmin = (e) => e.key === "Enter" && loginAdmin();
@@ -211,4 +204,4 @@ function LoginScreen({ onLogin }) {
   );
 }
 
-Object.assign(window, { LoginScreen, ADMIN_CREDS });
+Object.assign(window, { LoginScreen });

@@ -21,12 +21,75 @@ const TITLES = {
   export: ["ส่งออกรายงาน", "ดาวน์โหลดสรุปรายเดือน / รายปีการศึกษา"],
 };
 
+function ChangePasswordSheet({ open, onClose }) {
+  const [cur, setCur] = useState("");
+  const [next, setNext] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const [ok, setOk] = useState(false);
+
+  const reset = () => { setCur(""); setNext(""); setConfirm(""); setErr(""); setOk(false); };
+
+  const handleSave = async () => {
+    setErr("");
+    const creds = { id: FM.settings?.admin_id || "ADMIN001", password: FM.settings?.admin_password || "1234" };
+    if (cur !== creds.password) { setErr("รหัสผ่านปัจจุบันไม่ถูกต้อง"); return; }
+    if (next.length < 4) { setErr("รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร"); return; }
+    if (next !== confirm) { setErr("รหัสผ่านใหม่ไม่ตรงกัน"); return; }
+    setLoading(true);
+    try {
+      await API.updateSetting("admin_password", next);
+      FM.settings.admin_password = next;
+      setOk(true);
+      setTimeout(() => { onClose(); reset(); }, 1500);
+    } catch (e) {
+      setErr("บันทึกไม่สำเร็จ: " + e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Sheet open={open} onClose={() => { onClose(); reset(); }} title="เปลี่ยนรหัสผ่านผู้ดูแล" maxW={380}>
+      {ok ? (
+        <div style={{ textAlign: "center", padding: "24px 0", color: "var(--ok)", fontWeight: 600 }}>
+          <Icon name="check" size={32} /><div style={{ marginTop: 8 }}>เปลี่ยนรหัสผ่านสำเร็จ</div>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gap: 14 }}>
+          <div>
+            <label className="login-label">รหัสผ่านปัจจุบัน</label>
+            <input className="login-input" type="password" placeholder="••••••••" value={cur} onChange={(e) => setCur(e.target.value)} disabled={loading} />
+          </div>
+          <div>
+            <label className="login-label">รหัสผ่านใหม่</label>
+            <input className="login-input" type="password" placeholder="••••••••" value={next} onChange={(e) => setNext(e.target.value)} disabled={loading} />
+          </div>
+          <div>
+            <label className="login-label">ยืนยันรหัสผ่านใหม่</label>
+            <input className="login-input" type="password" placeholder="••••••••" value={confirm} onChange={(e) => setConfirm(e.target.value)} disabled={loading} />
+          </div>
+          {err && <div className="login-error"><Icon name="alert" size={15} stroke={2.4} />{err}</div>}
+          <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+            <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleSave} disabled={loading}>
+              {loading ? <Icon name="refresh" size={16} style={{ animation: "spin 1s linear infinite" }} /> : <Icon name="check" size={16} />} บันทึก
+            </button>
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => { onClose(); reset(); }} disabled={loading}>ยกเลิก</button>
+          </div>
+        </div>
+      )}
+    </Sheet>
+  );
+}
+
 function App() {
-  const [auth, setAuth] = useState(null);  // null = ยังไม่ login
+  const [auth, setAuth] = useState(null);
   const [tab, setTab] = useState("dashboard");
   const [pay, setPay] = useState(false);
   const [paid, setPaid] = useState(false);
   const [toast, setToast] = useState("");
+  const [changePw, setChangePw] = useState(false);
 
   const getNav = (role) => role === "admin"
     ? NAV_ADMIN_KEYS.map((n) => n.k === "verify" ? { ...n, badge: FM.queue.length } : n)
@@ -100,6 +163,12 @@ function App() {
               <div className="num muted" style={{ fontSize: 11 }}>{role === "admin" ? "เหรัญญิก · แอดมิน" : me.id}</div>
             </div>
           </div>
+          {role === "admin" && (
+            <button className="nav-item" onClick={() => setChangePw(true)} style={{ color: "var(--ink2)" }}>
+              <span className="ni-ic"><Icon name="key" size={18} /></span>
+              เปลี่ยนรหัสผ่าน
+            </button>
+          )}
           <button className="nav-item" onClick={logout} style={{ color: "var(--bad)" }}>
             <span className="ni-ic" style={{ color: "var(--bad)" }}><Icon name="logout" size={18} /></span>
             ออกจากระบบ
@@ -173,6 +242,7 @@ function App() {
       </main>
 
       <PayFlow open={pay} onClose={() => setPay(false)} onPaid={onPaid} />
+      <ChangePasswordSheet open={changePw} onClose={() => setChangePw(false)} />
       <Toast msg={toast} />
     </div>
   );

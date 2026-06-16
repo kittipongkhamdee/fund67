@@ -235,6 +235,20 @@ const API = {
   unsubscribe(subscription) {
     return supabase.removeSubscription(subscription);
   },
+
+  // --- App Settings ---
+  async fetchSettings() {
+    const { data, error } = await supabase.from("app_settings").select("*");
+    if (error) throw error;
+    return Object.fromEntries((data || []).map((r) => [r.key, r.value]));
+  },
+
+  async updateSetting(key, value) {
+    const { error } = await supabase
+      .from("app_settings")
+      .upsert({ key, value });
+    if (error) throw error;
+  },
 };
 
 Object.assign(window, { API });
