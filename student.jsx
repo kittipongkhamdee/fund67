@@ -284,4 +284,4 @@ function StudentHome({ paid, onPay, student = FM.me }) {
   );
 }
 
-Object.assign(window, { StudentHome, PayFlow, BankPicker, CopyField, BANKS });
+Object.assign(window, { StudentHome, PayFlow, CopyField });
