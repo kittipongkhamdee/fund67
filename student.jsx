@@ -26,7 +26,7 @@ function CopyField({ label, value, icon }) {
 
 
 /* ---------- Slip upload ---------- */
-function AIVerify({ onConfirm, onBack }) {
+function AIVerify({ onConfirm, onBack, studentId }) {
   const [phase, setPhase] = useState("pick"); // pick | uploading | done | error
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -46,7 +46,7 @@ function AIVerify({ onConfirm, onBack }) {
     setPhase("uploading");
     try {
       const slipUrl = await API.uploadSlipToStorage(file);
-      const sid = FM.me?.id;
+      const sid = studentId || localStorage.getItem("loggedInStudentId") || FM.me?.id;
       const monthPeriodId = FM.months[FM.currentMonthIndex]?.id;
       // Check if payment already exists — update slip instead of creating duplicate
       const existing = await API.fetchPayments(sid);
@@ -158,7 +158,7 @@ function PayFlow({ open, onClose, onPaid, studentId }) {
     setCashLoading(true); setCashErr("");
     try {
       const monthPeriodId = FM.months[FM.currentMonthIndex]?.id;
-      const sid = studentId || FM.me?.id;
+      const sid = studentId || localStorage.getItem("loggedInStudentId") || FM.me?.id;
       // Check if payment already exists for this month
       const existing = await API.fetchPayments(sid);
       const alreadyExists = existing.find((p) => p.month_period_id === monthPeriodId);
@@ -286,7 +286,7 @@ function PayFlow({ open, onClose, onPaid, studentId }) {
 
         {/* ── Step 3: อัปโหลดสลิป ── */}
         {step === "verify" && (
-          <AIVerify onBack={() => setStep("qr")} onConfirm={() => { onPaid(); onClose(); }} />
+          <AIVerify onBack={() => setStep("qr")} onConfirm={() => { onPaid(); onClose(); }} studentId={studentId} />
         )}
 
         {/* ── Step 4: เงินสดสำเร็จ ── */}

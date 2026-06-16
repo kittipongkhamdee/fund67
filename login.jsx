@@ -46,7 +46,12 @@ function LoginScreen({ onLogin }) {
     }
   };
 
-  const confirmStudent = () => { if (found) onLogin({ role: "student", student: found }); };
+  const confirmStudent = () => {
+    if (found) {
+      localStorage.setItem("loggedInStudentId", found.id);
+      onLogin({ role: "student", student: found });
+    }
+  };
 
   const onKeyStudent = (e) => e.key === "Enter" && !found && lookupStudent();
   const onKeyAdmin = (e) => e.key === "Enter" && loginAdmin();
