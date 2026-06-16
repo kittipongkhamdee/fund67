@@ -370,8 +370,9 @@ function AdminVerify() {
                     <img src={it.slip_image_url} alt="สลิป" style={{ width: "100%", maxHeight: 260, objectFit: "contain", display: "block", background: "#f5f5f5" }} />
                   </a>
                 ) : (
-                  <div style={{ height: 120, background: "var(--bg2)", display: "grid", placeItems: "center" }}>
-                    <span className="muted" style={{ fontSize: 13 }}>ไม่มีรูปสลิป</span>
+                  <div style={{ height: 100, background: "var(--ok-bg)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                    <Icon name="wallet" size={28} style={{ color: "var(--ok)" }} stroke={2} />
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "var(--ok)" }}>ชำระด้วยเงินสด</span>
                   </div>
                 )}
                 <div style={{ padding: 16 }}>
@@ -379,7 +380,14 @@ function AdminVerify() {
                     <span style={{ fontWeight: 700, fontSize: 15 }}>{studentName}</span>
                     <span className="num muted" style={{ fontSize: 12 }}>{studentId}</span>
                   </div>
-                  <div className="muted" style={{ fontSize: 12, marginBottom: 12 }}>เดือน {monthName} · ส่งเมื่อ {uploadedAt}</div>
+                  <div className="row gap6" style={{ marginBottom: 10 }}>
+                    {!it.slip_image_url && (
+                      <span className="badge" style={{ background: "var(--ok-bg)", color: "var(--ok)", fontSize: 11 }}>
+                        <Icon name="wallet" size={12} stroke={2.4} /> เงินสด
+                      </span>
+                    )}
+                    <span className="muted" style={{ fontSize: 12 }}>เดือน {monthName} · ส่งเมื่อ {uploadedAt}</span>
+                  </div>
                   <div className="row between" style={{ padding: "8px 12px", background: "var(--surface2)", borderRadius: 10, marginBottom: 14 }}>
                     <span className="muted" style={{ fontSize: 13, fontWeight: 600 }}>ยอดโอน</span>
                     <span className="num" style={{ fontWeight: 700, fontSize: 15 }}>{FM.fmt(it.amount)}</span>
