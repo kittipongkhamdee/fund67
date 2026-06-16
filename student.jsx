@@ -46,15 +46,15 @@ function AIVerify({ onConfirm, onBack }) {
     setPhase("uploading");
     try {
       const slipUrl = await API.uploadSlipToStorage(file);
-      const studentId = FM.me?.id;
+      const sid = FM.me?.id;
       const monthPeriodId = FM.months[FM.currentMonthIndex]?.id;
       // Check if payment already exists — update slip instead of creating duplicate
-      const existing = await API.fetchPayments(studentId);
+      const existing = await API.fetchPayments(sid);
       const prev = existing.find((p) => p.month_period_id === monthPeriodId);
       if (prev) {
         await API.uploadSlip(prev.id, slipUrl, null);
       } else {
-        await API.createPendingPayment(studentId, monthPeriodId, FM.MONTHLY_FEE, slipUrl);
+        await API.createPendingPayment(sid, monthPeriodId, FM.MONTHLY_FEE, slipUrl);
       }
       setPhase("done");
     } catch (e) {
@@ -129,7 +129,7 @@ function AIVerify({ onConfirm, onBack }) {
 
 
 /* ---------- Pay flow sheet ---------- */
-function PayFlow({ open, onClose, onPaid }) {
+function PayFlow({ open, onClose, onPaid, studentId }) {
   const [step, setStep] = useState("method"); // method | qr | verify | cash-done
   const [cashLoading, setCashLoading] = useState(false);
   const [cashErr, setCashErr] = useState("");
@@ -158,9 +158,9 @@ function PayFlow({ open, onClose, onPaid }) {
     setCashLoading(true); setCashErr("");
     try {
       const monthPeriodId = FM.months[FM.currentMonthIndex]?.id;
-      const studentId = FM.me?.id;
+      const sid = studentId || FM.me?.id;
       // Check if payment already exists for this month
-      const existing = await API.fetchPayments(studentId);
+      const existing = await API.fetchPayments(sid);
       const alreadyExists = existing.find((p) => p.month_period_id === monthPeriodId);
       if (alreadyExists) {
         if (alreadyExists.status === "paid") {
@@ -171,7 +171,7 @@ function PayFlow({ open, onClose, onPaid }) {
         }
         return;
       }
-      await API.createPendingPayment(studentId, monthPeriodId, FM.MONTHLY_FEE, null);
+      await API.createPendingPayment(sid, monthPeriodId, FM.MONTHLY_FEE, null);
       setStep("cash-done");
     } catch (e) {
       setCashErr(e.message || "บันทึกไม่สำเร็จ");

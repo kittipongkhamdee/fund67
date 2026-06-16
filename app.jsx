@@ -314,7 +314,7 @@ function App() {
         </nav>
       </main>
 
-      <PayFlow open={pay} onClose={() => setPay(false)} onPaid={onPaid} />
+      <PayFlow open={pay} onClose={() => setPay(false)} onPaid={onPaid} studentId={me.id} />
       <ChangePasswordSheet open={changePw} onClose={() => setChangePw(false)} onNameChange={(n) => setAdminName(n)} onSystemChange={(n) => setSystemName(n)} />
       <Toast msg={toast} />
     </div>
