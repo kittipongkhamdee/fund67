@@ -85,11 +85,22 @@ async function initializeFromSupabase() {
     const fmt = (n) => (n < 0 ? "-" : "") + "฿" + Math.abs(n).toLocaleString("th-TH");
     const fmtNum = (n) => Math.abs(n).toLocaleString("th-TH");
 
+    // Normalize account field names (Supabase → app shorthand)
+    const normalizedAccounts = accounts.map((a) => ({
+      ...a,
+      number: a.account_number,
+      holder: a.holder_name,
+      bank: a.bank_name,
+      code: a.bank_code,
+      color: a.bank_color,
+      active: a.status === "active",
+    }));
+
     // Calculate totals from accounts
     const totals = {
-      received: accounts.reduce((a, acc) => a + (acc.received || 0), 0),
-      withdrawn: accounts.reduce((a, acc) => a + (acc.withdrawn || 0), 0),
-      balance: accounts.reduce((a, acc) => a + (acc.balance || 0), 0),
+      received: normalizedAccounts.reduce((a, acc) => a + (acc.received || 0), 0),
+      withdrawn: normalizedAccounts.reduce((a, acc) => a + (acc.withdrawn || 0), 0),
+      balance: normalizedAccounts.reduce((a, acc) => a + (acc.balance || 0), 0),
       reserved: 1200,
     };
     totals.available = totals.balance - totals.reserved;
@@ -101,7 +112,7 @@ async function initializeFromSupabase() {
       currentMonthIndex,
       students: enrichedStudents,
       me,
-      accounts,
+      accounts: normalizedAccounts,
       totals,
       ledger: ledger || [],
       queue: queue || [],

@@ -176,7 +176,7 @@ function AIVerify({ onConfirm, onBack }) {
 function PayFlow({ open, onClose, onPaid }) {
   const [step, setStep] = useState("qr"); // qr -> verify
   const [bankOpen, setBankOpen] = useState(false);
-  const acc = FM.accounts[0];
+  const acc = FM.accounts?.[0] || {};
   useEffect(() => { if (open) setStep("qr"); }, [open]);
 
   return (
