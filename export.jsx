@@ -212,8 +212,8 @@ function ExportView() {
           )}
 
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: 22, paddingTop: 14, borderTop: "1px solid #E7E5DE", fontSize: 11, color: "#8A8C93" }}>
-            <span>ผู้จัดทำ: ปาณิสรา รัตนพร (เหรัญญิก)</span>
-            <span>ระบบกองทุนรุ่น · ตรวจสอบสลิปด้วย AI</span>
+            <span>ผู้จัดทำ: {FM.settings?.admin_name || "ผู้ดูแลระบบ"} (เหรัญญิก)</span>
+            <span>{FM.SYSTEM_NAME || "ระบบกองทุน"}</span>
           </div>
         </div>
       </div>
