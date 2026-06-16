@@ -51,16 +51,8 @@ function AdminDashboard() {
 
   return (
     <div>
-      {/* account selector */}
-      <div className="row between wrap gap12" style={{ marginBottom: 16 }}>
-        <div className="seg">
-          <button className={acc === "all" ? "on" : ""} onClick={() => setAcc("all")}>รวมทุกบัญชี</button>
-          {FM.accounts.map((a) => (
-            <button key={a.id} className={acc === a.id ? "on" : ""} onClick={() => setAcc(a.id)}>
-              {a.bankCode} {a.status === "archived" ? "· เก่า" : "· ล่าสุด"}
-            </button>
-          ))}
-        </div>
+      {/* last updated */}
+      <div className="row" style={{ justifyContent: "flex-end", marginBottom: 16 }}>
         <div className="row gap8 muted" style={{ fontSize: 12.5, fontWeight: 600 }}>
           <Icon name="refresh" size={15} /> อัปเดตล่าสุด วันนี้ 09:15
         </div>
