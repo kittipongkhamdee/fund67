@@ -120,11 +120,11 @@ async function initializeFromSupabase() {
     }
 
     console.log("✓ FM initialized from Supabase", window.FM);
+    if (window.__startApp) window.__startApp();
     return window.FM;
   } catch (error) {
     console.error("Failed to initialize FM from Supabase:", error);
-    // Fall back to demo data if Supabase is unavailable
-    console.log("Falling back to demo data...");
+    // Fall back to demo data (data.js will handle it)
     throw error;
   }
 }
@@ -133,7 +133,7 @@ async function initializeFromSupabase() {
 if (window.supabase) {
   initializeFromSupabase().catch((err) => {
     console.error("FM initialization failed:", err);
-    alert("โหลดข้อมูลล้มเหลว กรุณาโหลดหน้าใหม่");
+    // data.js will set demo FM and call __startApp
   });
 } else {
   console.warn("Supabase client not loaded yet");

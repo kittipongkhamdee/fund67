@@ -192,4 +192,5 @@
     fmt: (n) => (n < 0 ? "-" : "") + "฿" + Math.abs(n).toLocaleString("th-TH"),
     fmtNum: (n) => Math.abs(n).toLocaleString("th-TH"),
   };
+  if (window.__startApp) window.__startApp();
 })();

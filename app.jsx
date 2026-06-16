@@ -2,18 +2,16 @@
    App shell — auth guard, nav, routing, transitions.
    ============================================================ */
 
-const NAV = {
-  student: [
-    { k: "home", label: "กองทุนของฉัน", icon: "wallet" },
-  ],
-  admin: [
-    { k: "dashboard", label: "สรุปยอด", icon: "home" },
-    { k: "people", label: "รายบุคคล", icon: "users" },
-    { k: "students", label: "เพิ่มรหัสนักศึกษา", icon: "plus" },
-    { k: "verify", label: "ตรวจสลิป", icon: "shield", badge: FM.queue.length },
-    { k: "export", label: "ส่งออกรายงาน", icon: "download" },
-  ],
-};
+const NAV_STUDENT = [
+  { k: "home", label: "กองทุนของฉัน", icon: "wallet" },
+];
+const NAV_ADMIN_KEYS = [
+  { k: "dashboard", label: "สรุปยอด", icon: "home" },
+  { k: "people", label: "รายบุคคล", icon: "users" },
+  { k: "students", label: "เพิ่มรหัสนักศึกษา", icon: "plus" },
+  { k: "verify", label: "ตรวจสลิป", icon: "shield" },
+  { k: "export", label: "ส่งออกรายงาน", icon: "download" },
+];
 const TITLES = {
   home: ["กองทุนของฉัน", "ชำระค่ากองทุนและติดตามสถานะรายเดือน"],
   dashboard: ["สรุปยอดกองทุน", "ภาพรวมการเงินทุกบัญชี อัปเดตแบบเรียลไทม์"],
@@ -30,9 +28,13 @@ function App() {
   const [paid, setPaid] = useState(false);
   const [toast, setToast] = useState("");
 
+  const getNav = (role) => role === "admin"
+    ? NAV_ADMIN_KEYS.map((n) => n.k === "verify" ? { ...n, badge: FM.queue.length } : n)
+    : NAV_STUDENT;
+
   const login = (a) => {
     setAuth(a);
-    setTab(NAV[a.role][0].k);
+    setTab(getNav(a.role)[0].k);
     setPaid(false);
   };
   const logout = () => { setAuth(null); setPay(false); setPaid(false); setToast(""); };
@@ -46,7 +48,7 @@ function App() {
   if (!auth) return <LoginScreen onLogin={login} />;
 
   const { role, student } = auth;
-  const items = NAV[role];
+  const items = getNav(role);
   const [title, sub] = TITLES[tab] || ["", ""];
   const me = student || FM.me || { name: "ผู้ดูแลระบบ", id: "ADMIN001", avatarHue: 220, pays: [] };
   const thisStatus = paid ? "paid" : (me.pays?.[FM.currentMonthIndex] ?? "unpaid");
@@ -176,4 +178,11 @@ function App() {
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+window.__startApp = () => {
+  document.getElementById("app-loading").style.display = "none";
+  document.getElementById("root").style.display = "";
+  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+};
+
+// If FM already initialized (demo data), start immediately
+if (window.FM) window.__startApp();
