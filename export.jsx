@@ -130,7 +130,7 @@ function ExportView() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <span style={{ width: 34, height: 34, borderRadius: 10, background: "#0B5FFF", color: "#fff", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 13, fontFamily: "var(--num)" }}>67</span>
-                <span style={{ fontWeight: 700, fontSize: 18 }}>กองทุนรุ่น 67 · ห้อง IT-A</span>
+                <span style={{ fontWeight: 700, fontSize: 18 }}>กองทุนรุ่น 67</span>
               </div>
               <div style={{ fontSize: 19, fontWeight: 700, marginTop: 14, letterSpacing: "-.01em" }}>
                 {mode === "month" ? "สรุปการชำระรายเดือน · " + FM.months[mi].full : "สรุปการชำระประจำปีการศึกษา 2569"}

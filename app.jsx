@@ -144,7 +144,7 @@ function App() {
           <div className="brand-mark"><Icon name="wallet" size={20} stroke={2.2} /></div>
           <div>
             <div className="brand-name">กองทุนรุ่น 67</div>
-            <div className="brand-sub">ห้อง IT-A · {FM.students.length} คน</div>
+            <div className="brand-sub">{FM.students.length} คน</div>
           </div>
         </div>
 

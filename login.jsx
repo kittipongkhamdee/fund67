@@ -69,7 +69,7 @@ function LoginScreen({ onLogin }) {
               </div>
               <div>
                 <div style={{ fontWeight: 800, fontSize: 19, letterSpacing: "-.01em" }}>กองทุนรุ่น 67</div>
-                <div style={{ fontSize: 12.5, opacity: .8, fontWeight: 500, marginTop: 1 }}>ห้อง IT-A · ปีการศึกษา 2569</div>
+                <div style={{ fontSize: 12.5, opacity: .8, fontWeight: 500, marginTop: 1 }}>ปีการศึกษา 2569</div>
               </div>
             </div>
             <div style={{ fontSize: 28, fontWeight: 800, lineHeight: 1.25, letterSpacing: "-.02em", marginBottom: 16 }}>
