@@ -89,9 +89,9 @@ async function initializeFromSupabase() {
       ...a,
       number: a.account_number,
       holder: a.holder_name,
-      bank: a.bank_name,
-      code: a.bank_code,
-      color: a.bank_color,
+      bankName: a.bank_name,
+      bankCode: a.bank_code,
+      bankColor: a.bank_color,
       active: a.status === "active",
     }));
 
