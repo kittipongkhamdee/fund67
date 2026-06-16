@@ -8,7 +8,8 @@ function BarChart({ data, labels }) {
   const max = Math.max(...data.filter((d) => d != null), 1);
   const mounted = useMounted(150);
   return (
-    <div className="row" style={{ alignItems: "flex-end", gap: 7, height: 120, marginTop: 4 }}>
+    <div className="barchart-wrap">
+    <div className="row" style={{ alignItems: "flex-end", gap: 7, height: 120, marginTop: 4, minWidth: 280 }}>
       {data.map((v, i) => {
         const future = v == null;
         const h = future ? 6 : 14 + (v / max) * 92;
@@ -25,6 +26,7 @@ function BarChart({ data, labels }) {
           </div>
         );
       })}
+    </div>
     </div>
   );
 }
@@ -799,7 +801,7 @@ function AdminExpenses() {
   return (
     <div>
       {/* summary bar */}
-      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
+      <div className="grid-3" style={{ marginBottom: 16 }}>
         {[
           { label: "รายจ่ายทั้งหมด", val: FM.fmt(totalExpenses), ic: "arrowUp", bg: "var(--bad-bg)", fg: "var(--bad)" },
           { label: "ยอดรับสะสม", val: FM.fmt(FM.totals.received), ic: "arrowDown", bg: "var(--ok-bg)", fg: "var(--ok)" },
