@@ -178,7 +178,10 @@ function App() {
   );
 }
 
+let __appStarted = false;
 window.__startApp = () => {
+  if (__appStarted) return;
+  __appStarted = true;
   document.getElementById("app-loading").style.display = "none";
   document.getElementById("root").style.display = "";
   ReactDOM.createRoot(document.getElementById("root")).render(<App />);
