@@ -191,7 +191,7 @@ function AdminPeople() {
   return (
     <div>
       {/* summary chips */}
-      <div className="grid stat-grid" style={{ gridTemplateColumns: "repeat(4,1fr)", marginBottom: 16 }}>
+      <div className="grid stat-grid people-stat-grid" style={{ gridTemplateColumns: "repeat(4,1fr)", marginBottom: 16 }}>
         {[["ทั้งหมด", cm.total, "var(--ink)", "var(--mut-bg)", "users"],
           ["จ่ายแล้ว", cm.paid, "var(--ok)", "var(--ok-bg)", "checkCircle"],
           ["รอตรวจ", cm.pending, "var(--warn)", "var(--warn-bg)", "clock"],
@@ -508,24 +508,24 @@ function AdminStudents() {
             <table className="tbl">
               <thead>
                 <tr>
-                  <th>รหัสนักศึกษา</th>
                   <th>ชื่อ-นามสกุล</th>
-
                   <th style={{ textAlign: "right" }}>จัดการ</th>
                 </tr>
               </thead>
               <tbody>
                 {students.map((s) => (
                   <tr key={s.id}>
-                    <td><span className="sid">{s.id}</span></td>
-                    <td>
+                    <td style={{ width: "100%" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <Avatar name={s.name} hue={s.avatarHue || 220} size={32} />
-                        <span>{s.name}</span>
+                        <Avatar name={s.name} hue={s.avatarHue || 220} size={34} />
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: 14, lineHeight: 1.3 }}>{s.name}</div>
+                          <div className="sid" style={{ fontSize: 12, color: "var(--mut)" }}>{s.id}</div>
+                        </div>
                       </div>
                     </td>
                     <td>
-                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end", flexShrink: 0 }}>
                         <button className="btn btn-ghost btn-sm" onClick={() => handleEditClick(s)} disabled={loading} title="แก้ไข" style={{ padding: "6px 10px" }}>
                           <Icon name="pen" size={15} /> แก้ไข
                         </button>
