@@ -57,6 +57,9 @@ function AIVerify({ onConfirm, onBack, studentId, monthIdx }) {
       } else {
         await API.createPendingPayment(sid, monthPeriodId, FM.MONTHLY_FEE, slipUrl);
       }
+      const mName = FM.months[targetIdx]?.full || "";
+      const sName = FM.students?.find((s) => s.id === sid)?.name || sid;
+      API.notifyAdmin("แจ้งเตือน: มีสลิปใหม่รอตรวจสอบ", sName + " ส่งสลิปชำระเงิน " + mName + " (" + FM.fmt(FM.MONTHLY_FEE) + ")");
       setPhase("done");
     } catch (e) {
       setErrMsg(e.message || "อัปโหลดไม่สำเร็จ");
@@ -195,10 +198,16 @@ function PayFlow({ open, onClose, onPaid, studentId, studentPays }) {
         }
         // rejected — reset to pending so admin can re-verify
         await API.uploadSlip(alreadyExists.id, null, null);
+        const mName2 = FM.months[selMonthIdx]?.full || "";
+        const sName2 = FM.students?.find((s) => s.id === sid)?.name || sid;
+        API.notifyAdmin("แจ้งเตือน: มีรายการเงินสดรอยืนยัน", sName2 + " แจ้งชำระเงินสด " + mName2 + " (" + FM.fmt(FM.MONTHLY_FEE) + ")");
         setStep("cash-done");
         return;
       }
       await API.createPendingPayment(sid, monthPeriodId, FM.MONTHLY_FEE, null);
+      const mName = FM.months[selMonthIdx]?.full || "";
+      const sName = FM.students?.find((s) => s.id === sid)?.name || sid;
+      API.notifyAdmin("แจ้งเตือน: มีรายการเงินสดรอยืนยัน", sName + " แจ้งชำระเงินสด " + mName + " (" + FM.fmt(FM.MONTHLY_FEE) + ")");
       setStep("cash-done");
     } catch (e) {
       setCashErr(e.message || "บันทึกไม่สำเร็จ");

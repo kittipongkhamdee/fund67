@@ -301,6 +301,18 @@ const API = {
       .upsert({ key, value });
     if (error) throw error;
   },
+
+  async notifyAdmin(title, body) {
+    const topic = FM.settings?.notify_topic;
+    if (!topic) return;
+    try {
+      await fetch("https://ntfy.sh/" + encodeURIComponent(topic), {
+        method: "POST",
+        headers: { "Title": title, "Priority": "default", "Tags": "bell" },
+        body,
+      });
+    } catch (_) { /* silent — notification is best-effort */ }
+  },
 };
 
 Object.assign(window, { API });

@@ -29,6 +29,7 @@ function ChangePasswordSheet({ open, onClose, onNameChange, onSystemChange }) {
   const [systemName, setSystemName] = useState("");
   const [monthlyFee, setMonthlyFee] = useState("");
   const [adminName, setAdminName] = useState("");
+  const [notifyTopic, setNotifyTopic] = useState("");
   const [cur, setCur] = useState("");
   const [next, setNext] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -41,6 +42,7 @@ function ChangePasswordSheet({ open, onClose, onNameChange, onSystemChange }) {
       setSystemName(FM.settings?.system_name || FM.SYSTEM_NAME || "กองทุนรุ่น 67");
       setMonthlyFee(String(FM.settings?.monthly_fee || FM.MONTHLY_FEE || 100));
       setAdminName(FM.settings?.admin_name || "");
+      setNotifyTopic(FM.settings?.notify_topic || "");
     }
   }, [open]);
 
@@ -63,12 +65,14 @@ function ChangePasswordSheet({ open, onClose, onNameChange, onSystemChange }) {
         API.updateSetting("system_name", systemName.trim()),
         API.updateSetting("monthly_fee", String(fee)),
         adminName.trim() ? API.updateSetting("admin_name", adminName.trim()) : Promise.resolve(),
+        notifyTopic.trim() ? API.updateSetting("notify_topic", notifyTopic.trim()) : API.updateSetting("notify_topic", ""),
       ]);
       FM.settings.system_name = systemName.trim();
       FM.settings.monthly_fee = String(fee);
       FM.SYSTEM_NAME = systemName.trim();
       FM.MONTHLY_FEE = fee;
       if (adminName.trim()) FM.settings.admin_name = adminName.trim();
+      FM.settings.notify_topic = notifyTopic.trim();
       if (next && cur) {
         await API.updateSetting("admin_password", next);
         FM.settings.admin_password = next;
@@ -109,6 +113,18 @@ function ChangePasswordSheet({ open, onClose, onNameChange, onSystemChange }) {
             <div>
               <label className="login-label">ชื่อผู้ดูแลระบบ</label>
               <input className="login-input" type="text" placeholder="เช่น นายสุวัชชัย พูนยิ่งยงค์" value={adminName} onChange={(e) => setAdminName(e.target.value)} disabled={loading} />
+            </div>
+          </div>
+
+          <div style={{ borderTop: "1px solid var(--line)", paddingTop: 14, display: "grid", gap: 14 }}>
+            <div className="muted" style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em" }}>การแจ้งเตือน (ntfy)</div>
+            <div>
+              <label className="login-label">ชื่อ Topic (ntfy.sh)</label>
+              <input className="login-input" type="text" placeholder="เช่น fund67-abc123"
+                value={notifyTopic} onChange={(e) => setNotifyTopic(e.target.value)} disabled={loading} />
+              <div className="muted" style={{ fontSize: 11.5, marginTop: 5, lineHeight: 1.6 }}>
+                ติดตั้งแอป <strong>ntfy</strong> บนมือถือ → subscribe ชื่อ topic นี้ → รับแจ้งเตือนเมื่อนักศึกษาส่งสลิปหรือจ่ายเงินสด
+              </div>
             </div>
           </div>
 
