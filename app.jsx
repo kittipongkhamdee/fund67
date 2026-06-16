@@ -120,9 +120,25 @@ function ChangePasswordSheet({ open, onClose, onNameChange, onSystemChange }) {
             <div className="muted" style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em" }}>การแจ้งเตือน (ntfy)</div>
             <div>
               <label className="login-label">ชื่อ Topic (ntfy.sh)</label>
-              <input className="login-input" type="text" placeholder="เช่น fund67-abc123"
-                value={notifyTopic} onChange={(e) => setNotifyTopic(e.target.value)} disabled={loading} />
-              <div className="muted" style={{ fontSize: 11.5, marginTop: 5, lineHeight: 1.6 }}>
+              <div className="row gap8">
+                <input className="login-input" style={{ flex: 1, marginBottom: 0 }} type="text" placeholder="เช่น fund67-abc123"
+                  value={notifyTopic} onChange={(e) => setNotifyTopic(e.target.value)} disabled={loading} />
+                <button type="button" className="btn btn-ghost btn-sm" style={{ flexShrink: 0, height: 44 }}
+                  disabled={!notifyTopic.trim()}
+                  onClick={async () => {
+                    try {
+                      await fetch("https://ntfy.sh/" + encodeURIComponent(notifyTopic.trim()), {
+                        method: "POST",
+                        headers: { "Title": "ทดสอบระบบแจ้งเตือน", "Tags": "white_check_mark" },
+                        body: "ระบบกองทุนรุ่น 67 เชื่อมต่อสำเร็จ!",
+                      }).then(r => { if (!r.ok) throw new Error("status " + r.status); alert("ส่งทดสอบสำเร็จ (" + r.status + ") — ตรวจสอบมือถือ"); })
+                        .catch(e => alert("ส่งไม่สำเร็จ: " + e.message));
+                    } catch(e) { alert("Error: " + e.message); }
+                  }}>
+                  ทดสอบ
+                </button>
+              </div>
+              <div className="muted" style={{ fontSize: 11.5, marginTop: 6, lineHeight: 1.6 }}>
                 ติดตั้งแอป <strong>ntfy</strong> บนมือถือ → subscribe ชื่อ topic นี้ → รับแจ้งเตือนเมื่อนักศึกษาส่งสลิปหรือจ่ายเงินสด
               </div>
             </div>
