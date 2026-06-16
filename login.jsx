@@ -205,10 +205,6 @@ function LoginScreen({ onLogin }) {
             </div>
           )}
 
-          {/* demo autofill */}
-          <button onClick={autoFill} className="login-demo-btn">
-            <Icon name="spark2" size={13} fill="var(--brand)" stroke={0} /> เดโม: กรอกข้อมูลตัวอย่างให้อัตโนมัติ
-          </button>
         </div>
       </div>
     </div>
