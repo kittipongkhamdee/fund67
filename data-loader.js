@@ -16,7 +16,7 @@ async function initializeFromSupabase() {
       API.fetchVerificationQueue(),
       API.fetchSettings(),
       API.fetchAllPayments({ status: "paid" }),
-      API.fetchLedger(null, 500),
+      API.fetchAllTransactions(500),
     ]);
 
     // Normalize month field names (Supabase → app shorthand)
@@ -99,7 +99,7 @@ async function initializeFromSupabase() {
     // Calculate totals from REAL payment/transaction data
     const totalReceived = allPaidPayments.reduce((s, p) => s + (p.amount || 0), 0);
     const totalWithdrawn = allTransactions
-      .filter((t) => t.type === "withdrawal" || t.type === "expense")
+      .filter((t) => t.type !== "income" && t.type !== "in")
       .reduce((s, t) => s + (t.amount || 0), 0);
     const totalBalance = totalReceived - totalWithdrawn;
 
