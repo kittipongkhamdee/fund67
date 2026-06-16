@@ -150,7 +150,20 @@ function PayFlow({ open, onClose, onPaid }) {
     setCashLoading(true); setCashErr("");
     try {
       const monthPeriodId = FM.months[FM.currentMonthIndex]?.id;
-      await API.createPendingPayment(FM.me?.id, monthPeriodId, FM.MONTHLY_FEE, null);
+      const studentId = FM.me?.id;
+      // Check if payment already exists for this month
+      const existing = await API.fetchPayments(studentId);
+      const alreadyExists = existing.find((p) => p.month_period_id === monthPeriodId);
+      if (alreadyExists) {
+        if (alreadyExists.status === "paid") {
+          setCashErr("ชำระเงินเดือนนี้เรียบร้อยแล้ว");
+        } else {
+          // already pending — treat as success
+          setStep("cash-done");
+        }
+        return;
+      }
+      await API.createPendingPayment(studentId, monthPeriodId, FM.MONTHLY_FEE, null);
       setStep("cash-done");
     } catch (e) {
       setCashErr(e.message || "บันทึกไม่สำเร็จ");
