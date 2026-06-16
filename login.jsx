@@ -81,7 +81,7 @@ function LoginScreen({ onLogin }) {
             </div>
             {/* mini stats */}
             <div style={{ display: "flex", gap: 14, marginTop: 30 }}>
-              {[[FM.students.length + " คน", "นักศึกษา"], [FM.fmt(FM.MONTHLY_FEE), "/ เดือน"], ["AI", "ตรวจสลิป"]].map(([v, l]) => (
+              {[[FM.students.length + " คน", "นักศึกษา"], [FM.fmt(FM.MONTHLY_FEE), "/ เดือน"], [FM.fmt(FM.totals?.available ?? 0), "คงเหลือ"]].map(([v, l]) => (
                 <div key={l} style={{ background: "rgba(255,255,255,.15)", borderRadius: 12, padding: "10px 14px", backdropFilter: "blur(6px)", border: "1px solid rgba(255,255,255,.2)" }}>
                   <div style={{ fontFamily: "var(--num)", fontWeight: 700, fontSize: 17 }}>{v}</div>
                   <div style={{ fontSize: 11, opacity: .8, fontWeight: 600, marginTop: 1 }}>{l}</div>
