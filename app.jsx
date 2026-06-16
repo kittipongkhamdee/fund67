@@ -124,7 +124,10 @@ function App() {
   const { role, student } = auth;
   const items = getNav(role);
   const [title, sub] = TITLES[tab] || ["", ""];
-  const me = student || FM.me || { name: "ผู้ดูแลระบบ", id: "ADMIN001", avatarHue: 220, pays: [] };
+  const adminName = FM.settings?.admin_name || "ผู้ดูแลระบบ";
+  const me = role === "admin"
+    ? { name: adminName, id: FM.settings?.admin_id || "ADMIN", avatarHue: 220, pays: [] }
+    : (student || FM.me || { name: "ผู้ดูแลระบบ", id: "ADMIN", avatarHue: 220, pays: [] });
   const thisStatus = paid ? "paid" : (me.pays?.[FM.currentMonthIndex] ?? "unpaid");
 
   const Page = () => {
