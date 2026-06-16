@@ -133,7 +133,7 @@ function AdminDashboard() {
                   </div>
                   <div className="num muted" style={{ fontSize: 12, marginTop: 1 }}>{a.number}</div>
                 </div>
-                <div className="num" style={{ fontWeight: 700, fontSize: 15 }}>{FM.fmt(a.balance)}</div>
+                <div className="num" style={{ fontWeight: 700, fontSize: 15 }}>{FM.fmt(FM.totals.balance)}</div>
               </div>
             ))}
           </div>
@@ -142,20 +142,30 @@ function AdminDashboard() {
         <div className="card card-pad reveal grid-2" style={{ animationDelay: ".24s" }}>
           <div className="section-title" style={{ marginBottom: 6 }}>รายการล่าสุด</div>
           <div>
-            {FM.ledger.slice(0, 5).map((tx) => (
-              <div key={tx.id} className="lrow">
-                <span className="lrow-ic" style={{ background: tx.type === "in" ? "var(--ok-bg)" : "var(--bad-bg)", color: tx.type === "in" ? "var(--ok)" : "var(--bad)" }}>
-                  <Icon name={tx.type === "in" ? "arrowDown" : "arrowUp"} size={18} stroke={2.4} />
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tx.title}</div>
-                  <div className="muted" style={{ fontSize: 11.5 }}>{tx.when} · {tx.sub}</div>
-                </div>
-                <div className="num" style={{ fontWeight: 700, fontSize: 14, color: tx.type === "in" ? "var(--ok)" : "var(--ink)" }}>
-                  {tx.type === "in" ? "+" : ""}{FM.fmt(tx.amount)}
-                </div>
+            {FM.ledger.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "24px 0", color: "var(--mut)" }}>
+                <Icon name="receipt" size={28} style={{ opacity: .4 }} />
+                <div style={{ fontSize: 13, marginTop: 8 }}>ยังไม่มีรายการ</div>
+                <div style={{ fontSize: 12, marginTop: 4 }}>รายการจะปรากฏเมื่อเหรัญญิกยืนยันการชำระ</div>
               </div>
-            ))}
+            ) : FM.ledger.slice(0, 8).map((tx) => {
+              const isIn = tx.type === "income" || tx.type === "in";
+              const dateStr = tx.created_at ? new Date(tx.created_at).toLocaleDateString("th-TH", { day: "numeric", month: "short" }) : (tx.when || "");
+              return (
+                <div key={tx.id} className="lrow">
+                  <span className="lrow-ic" style={{ background: isIn ? "var(--ok-bg)" : "var(--bad-bg)", color: isIn ? "var(--ok)" : "var(--bad)" }}>
+                    <Icon name={isIn ? "arrowDown" : "arrowUp"} size={18} stroke={2.4} />
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tx.title}</div>
+                    <div className="muted" style={{ fontSize: 11.5 }}>{dateStr}{tx.description ? " · " + tx.description : ""}</div>
+                  </div>
+                  <div className="num" style={{ fontWeight: 700, fontSize: 14, color: isIn ? "var(--ok)" : "var(--ink)" }}>
+                    {isIn ? "+" : ""}{FM.fmt(tx.amount)}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -292,7 +302,15 @@ function AdminVerify() {
   const act = async (id, confirmed) => {
     setActing(id);
     try {
+      const payment = items.find((q) => q.id === id);
       await API.confirmPayment(id, confirmed);
+      // Auto-create transaction record when confirmed
+      if (confirmed && payment) {
+        const studentName = payment.students?.name || payment.student_id;
+        const monthName = payment.month_periods?.month_full || "";
+        const accId = FM.accounts?.[0]?.id || null;
+        await API.recordTransaction(accId, "income", "ค่ากองทุน · " + studentName, payment.amount, monthName).catch(() => {});
+      }
       setItems((x) => x.filter((q) => q.id !== id));
       setToast(confirmed ? "ยืนยันการชำระแล้ว" : "ปฏิเสธสลิปแล้ว");
       setTimeout(() => setToast(""), 1800);
