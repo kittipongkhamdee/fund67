@@ -157,28 +157,43 @@ function PayFlow({ open, onClose, onPaid }) {
               <Badge status="unpaid" />
             </div>
 
-            {/* QR */}
-            <div className="card" style={{ padding: 18, textAlign: "center",
-              background: "linear-gradient(180deg,#fff,#FAFBFF)", borderColor: "#E2E8FA" }}>
-              <div className="row" style={{ justifyContent: "center", gap: 8, marginBottom: 12, color: "var(--brand)", fontWeight: 700, fontSize: 13 }}>
-                <Icon name="qr" size={16} stroke={2.2} /> สแกนเพื่อโอนผ่านพร้อมเพย์
-              </div>
-              <div style={{ display: "inline-block", padding: 12, background: "#fff", borderRadius: 18, boxShadow: "var(--sh-md)" }} ref={qrRef}>
-                <QRCode text={makePromptPayPayload(acc.promptpay, FM.MONTHLY_FEE)} size={172} />
-              </div>
-              <div className="muted" style={{ fontSize: 12, marginTop: 12, fontWeight: 600 }}>
-                {acc.holder}
-              </div>
-            </div>
+            {/* QR — แสดงเฉพาะเมื่อมีหมายเลขพร้อมเพย์ */}
+            {acc.promptpay ? (
+              <>
+                <div className="card" style={{ padding: 18, textAlign: "center",
+                  background: "linear-gradient(180deg,#fff,#FAFBFF)", borderColor: "#E2E8FA" }}>
+                  <div className="row" style={{ justifyContent: "center", gap: 8, marginBottom: 12, color: "var(--brand)", fontWeight: 700, fontSize: 13 }}>
+                    <Icon name="qr" size={16} stroke={2.2} /> สแกนเพื่อโอนผ่านพร้อมเพย์
+                  </div>
+                  <div style={{ display: "inline-block", padding: 12, background: "#fff", borderRadius: 18, boxShadow: "var(--sh-md)" }} ref={qrRef}>
+                    <QRCode text={makePromptPayPayload(acc.promptpay, FM.MONTHLY_FEE)} size={172} />
+                  </div>
+                  <div className="muted" style={{ fontSize: 12, marginTop: 12, fontWeight: 600 }}>
+                    {acc.holder}
+                  </div>
+                </div>
 
-            <div className="mt16" style={{ display: "grid", gap: 12 }}>
-              <CopyField label="เลขบัญชี · ไทยพาณิชย์ (บัญชีกองทุน)" value={acc.number} icon="bank" />
-              <CopyField label="พร้อมเพย์" value={acc.promptpay} icon="qr" />
-            </div>
+                <div className="mt16" style={{ display: "grid", gap: 12 }}>
+                  {acc.number && <CopyField label={"เลขบัญชี · " + (acc.bankName || "บัญชีกองทุน")} value={acc.number} icon="bank" />}
+                  <CopyField label="พร้อมเพย์" value={acc.promptpay} icon="qr" />
+                </div>
 
-            <button className="btn btn-primary mt16" style={{ width: "100%" }} onClick={downloadQR}>
-              <Icon name="download" size={18} stroke={2.2} /> บันทึก QR พร้อมเพย์
-            </button>
+                <button className="btn btn-primary mt16" style={{ width: "100%" }} onClick={downloadQR}>
+                  <Icon name="download" size={18} stroke={2.2} /> บันทึก QR พร้อมเพย์
+                </button>
+              </>
+            ) : (
+              acc.number ? (
+                <div className="mt16" style={{ display: "grid", gap: 12 }}>
+                  <CopyField label={"เลขบัญชี · " + (acc.bankName || "บัญชีกองทุน")} value={acc.number} icon="bank" />
+                </div>
+              ) : (
+                <div className="card" style={{ padding: 24, textAlign: "center" }}>
+                  <Icon name="bank" size={32} style={{ color: "var(--mut)", marginBottom: 10 }} />
+                  <div className="muted" style={{ fontSize: 13 }}>ยังไม่ได้ตั้งค่าบัญชีรับเงิน<br/>กรุณาติดต่อเหรัญญิก</div>
+                </div>
+              )
+            )}
 
             <div className="row gap12 mt16" style={{ alignItems: "center" }}>
               <div style={{ flex: 1, height: 1, background: "var(--line)" }} />
