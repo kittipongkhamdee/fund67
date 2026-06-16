@@ -129,8 +129,8 @@ function ChangePasswordSheet({ open, onClose, onNameChange, onSystemChange }) {
                     try {
                       await fetch("https://ntfy.sh/" + encodeURIComponent(notifyTopic.trim()), {
                         method: "POST",
-                        headers: { "Title": "ทดสอบระบบแจ้งเตือน", "Tags": "white_check_mark" },
-                        body: "ระบบกองทุนรุ่น 67 เชื่อมต่อสำเร็จ!",
+                        headers: { "Title": "Fund67 Test", "Tags": "white_check_mark" },
+                        body: "ทดสอบระบบแจ้งเตือน\nระบบกองทุนรุ่น 67 เชื่อมต่อสำเร็จ!",
                       }).then(r => { if (!r.ok) throw new Error("status " + r.status); alert("ส่งทดสอบสำเร็จ (" + r.status + ") — ตรวจสอบมือถือ"); })
                         .catch(e => alert("ส่งไม่สำเร็จ: " + e.message));
                     } catch(e) { alert("Error: " + e.message); }

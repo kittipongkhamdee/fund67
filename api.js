@@ -305,10 +305,11 @@ const API = {
   async notifyAdmin(title, body) {
     const topic = FM.settings?.notify_topic;
     if (!topic) return;
+    // HTTP headers only support ISO-8859-1 — send Thai text in body, use ASCII title
     const res = await fetch("https://ntfy.sh/" + encodeURIComponent(topic), {
       method: "POST",
-      headers: { "Title": title, "Priority": "default", "Tags": "bell" },
-      body,
+      headers: { "Title": "Fund67 Alert", "Priority": "default", "Tags": "bell" },
+      body: title + "\n" + body,
     });
     if (!res.ok) throw new Error("ntfy status " + res.status);
   },
