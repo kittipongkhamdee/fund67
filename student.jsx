@@ -3,15 +3,6 @@
    verification, my monthly status.
    ============================================================ */
 
-const BANKS = [
-  { code: "SCB", name: "SCB EASY", color: "#4E2A84" },
-  { code: "KBANK", name: "K PLUS", color: "#0F9D58" },
-  { code: "KTB", name: "Krungthai NEXT", color: "#01A8E8" },
-  { code: "BBL", name: "Bualuang", color: "#1A3B8B" },
-  { code: "BAY", name: "KMA krungsri", color: "#FDB913" },
-  { code: "TTB", name: "ttb touch", color: "#1279BE" },
-];
-
 function CopyField({ label, value, icon }) {
   const [copied, setCopied] = useState(false);
   const copy = () => {
@@ -33,56 +24,6 @@ function CopyField({ label, value, icon }) {
   );
 }
 
-/* ---------- เปิดแอปธนาคาร (deep-link mock) ---------- */
-function BankPicker({ open, onClose }) {
-  const [opening, setOpening] = useState(null);
-  useEffect(() => { if (!open) setOpening(null); }, [open]);
-  return (
-    <Sheet open={open} onClose={onClose} title="เปิดแอปธนาคารเพื่อโอน" maxW={420}>
-      {!opening ? (
-        <>
-          <p className="muted" style={{ fontSize: 13.5, marginBottom: 16 }}>
-            เลือกแอปธนาคารของคุณ ระบบจะเปิดแอปพร้อมกรอกเลขบัญชีและยอดเงินให้อัตโนมัติ
-          </p>
-          <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 11 }}>
-            {BANKS.map((b) => (
-              <button key={b.code} className="card card-pad" onClick={() => setOpening(b)}
-                style={{ display: "flex", alignItems: "center", gap: 12, padding: 14, textAlign: "left", transition: ".15s" }}
-                onMouseEnter={(e) => e.currentTarget.style.borderColor = "var(--line2)"}
-                onMouseLeave={(e) => e.currentTarget.style.borderColor = "var(--line)"}>
-                <span style={{ width: 40, height: 40, borderRadius: 11, background: b.color, color: "#fff",
-                  display: "grid", placeItems: "center", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>
-                  {b.code.slice(0, 2)}
-                </span>
-                <span style={{ fontSize: 13.5, fontWeight: 600 }}>{b.name}</span>
-              </button>
-            ))}
-          </div>
-        </>
-      ) : (
-        <div style={{ textAlign: "center", padding: "26px 0 8px" }}>
-          <div style={{ width: 78, height: 78, borderRadius: 22, background: opening.color, color: "#fff",
-            display: "grid", placeItems: "center", fontWeight: 700, fontSize: 24, margin: "0 auto",
-            boxShadow: "0 14px 34px -10px " + opening.color, animation: "pop .3s" }}>
-            {opening.code.slice(0, 2)}
-          </div>
-          <div className="num" style={{ marginTop: 18, fontSize: 15, fontWeight: 600 }}>กำลังเปิด {opening.name}…</div>
-          <div className="row" style={{ justifyContent: "center", gap: 6, marginTop: 14 }}>
-            {[0, 1, 2].map((i) => (
-              <span key={i} style={{ width: 8, height: 8, borderRadius: 50, background: "var(--brand)",
-                animation: `bounce 1s ${i * .15}s infinite` }} />
-            ))}
-          </div>
-          <p className="muted" style={{ fontSize: 12.5, marginTop: 20, lineHeight: 1.6, maxWidth: 300, margin: "20px auto 0" }}>
-            บนมือถือจริง ปุ่มนี้จะเด้งเข้าแอป {opening.name} ทันทีผ่าน deep-link พร้อมข้อมูลผู้รับและยอดเงิน
-          </p>
-          <button className="btn btn-ghost btn-sm" style={{ marginTop: 18 }} onClick={() => setOpening(null)}>เลือกธนาคารอื่น</button>
-        </div>
-      )}
-      <style>{`@keyframes bounce{0%,100%{transform:translateY(0);opacity:.4}50%{transform:translateY(-7px);opacity:1}}`}</style>
-    </Sheet>
-  );
-}
 
 /* ---------- AI slip verification ---------- */
 function AIVerify({ onConfirm, onBack }) {
@@ -174,10 +115,27 @@ function AIVerify({ onConfirm, onBack }) {
 
 /* ---------- Pay flow sheet ---------- */
 function PayFlow({ open, onClose, onPaid }) {
-  const [step, setStep] = useState("qr"); // qr -> verify
-  const [bankOpen, setBankOpen] = useState(false);
+  const [step, setStep] = useState("qr");
+  const qrRef = useRef(null);
   const acc = FM.accounts?.[0] || {};
   useEffect(() => { if (open) setStep("qr"); }, [open]);
+
+  const downloadQR = () => {
+    const canvas = qrRef.current?.querySelector("canvas");
+    if (!canvas) return;
+    const padding = 20;
+    const out = document.createElement("canvas");
+    out.width = canvas.width + padding * 2;
+    out.height = canvas.height + padding * 2;
+    const ctx = out.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, out.width, out.height);
+    ctx.drawImage(canvas, padding, padding);
+    const a = document.createElement("a");
+    a.href = out.toDataURL("image/png");
+    a.download = "promptpay-qr.png";
+    a.click();
+  };
 
   return (
     <>
@@ -198,7 +156,7 @@ function PayFlow({ open, onClose, onPaid }) {
               <div className="row" style={{ justifyContent: "center", gap: 8, marginBottom: 12, color: "var(--brand)", fontWeight: 700, fontSize: 13 }}>
                 <Icon name="qr" size={16} stroke={2.2} /> สแกนเพื่อโอนผ่านพร้อมเพย์
               </div>
-              <div style={{ display: "inline-block", padding: 12, background: "#fff", borderRadius: 18, boxShadow: "var(--sh-md)" }}>
+              <div style={{ display: "inline-block", padding: 12, background: "#fff", borderRadius: 18, boxShadow: "var(--sh-md)" }} ref={qrRef}>
                 <QRCode text={makePromptPayPayload(acc.promptpay, FM.MONTHLY_FEE)} size={172} />
               </div>
               <div className="muted" style={{ fontSize: 12, marginTop: 12, fontWeight: 600 }}>
@@ -211,8 +169,8 @@ function PayFlow({ open, onClose, onPaid }) {
               <CopyField label="พร้อมเพย์" value={acc.promptpay} icon="qr" />
             </div>
 
-            <button className="btn btn-primary mt16" style={{ width: "100%" }} onClick={() => setBankOpen(true)}>
-              <Icon name="external" size={18} stroke={2.2} /> เปิดแอปธนาคารเพื่อโอน
+            <button className="btn btn-primary mt16" style={{ width: "100%" }} onClick={downloadQR}>
+              <Icon name="download" size={18} stroke={2.2} /> บันทึก QR พร้อมเพย์
             </button>
 
             <div className="row gap12 mt16" style={{ alignItems: "center" }}>
@@ -229,7 +187,6 @@ function PayFlow({ open, onClose, onPaid }) {
           <AIVerify onBack={() => setStep("qr")} onConfirm={() => { onPaid(); onClose(); }} />
         )}
       </Sheet>
-      <BankPicker open={bankOpen} onClose={() => setBankOpen(false)} />
     </>
   );
 }
