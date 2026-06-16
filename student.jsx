@@ -215,7 +215,7 @@ function StudentHome({ paid, onPay, student = FM.me }) {
           <div className="row between" style={{ alignItems: "flex-start" }}>
             <div>
               <div style={{ fontSize: 13.5, opacity: .85, fontWeight: 500 }}>สวัสดี, {me.name.split(" ")[0]} 👋</div>
-              <div style={{ fontSize: 20, fontWeight: 700, marginTop: 2 }}>กองทุนรุ่น 67 · ห้อง IT-A</div>
+              <div style={{ fontSize: 20, fontWeight: 700, marginTop: 2 }}>กองทุนรุ่น 67</div>
             </div>
             <span className="num" style={{ fontSize: 12.5, fontWeight: 600, opacity: .9, background: "rgba(255,255,255,.16)", padding: "6px 11px", borderRadius: 20 }}>
               {me.id}
