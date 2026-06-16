@@ -186,14 +186,16 @@ function App() {
           </span>
         </div>
 
-        <div className="nav-label">เมนู</div>
-        {items.map((it) => (
-          <button key={it.k} className={"nav-item " + (tab === it.k ? "active" : "")} onClick={() => setTab(it.k)}>
-            <span className="ni-ic"><Icon name={it.icon} size={19} /></span>
-            {it.label}
-            {it.badge ? <span className="nav-badge">{it.badge}</span> : null}
-          </button>
-        ))}
+        <div className="sidebar-scroll">
+          <div className="nav-label">เมนู</div>
+          {items.map((it) => (
+            <button key={it.k} className={"nav-item " + (tab === it.k ? "active" : "")} onClick={() => setTab(it.k)}>
+              <span className="ni-ic"><Icon name={it.icon} size={19} /></span>
+              {it.label}
+              {it.badge ? <span className="nav-badge">{it.badge}</span> : null}
+            </button>
+          ))}
+        </div>
 
         <div className="sidebar-foot">
           <div className="nav-item" style={{ cursor: "default", marginBottom: 2 }}>
