@@ -727,4 +727,168 @@ function AdminAccounts() {
   );
 }
 
-Object.assign(window, { AdminDashboard, AdminPeople, AdminVerify, AdminStudents, AdminAccounts, BarChart });
+/* ---------- Expenses / Withdrawals ---------- */
+const EXPENSE_TYPES = [
+  { value: "withdrawal", label: "เบิกเงิน / ถอนเงิน" },
+  { value: "expense", label: "ค่าใช้จ่าย / จัดซื้อ" },
+  { value: "other", label: "อื่นๆ" },
+];
+
+function AdminExpenses() {
+  const [txs, setTxs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [formOpen, setFormOpen] = useState(false);
+  const [form, setForm] = useState({ title: "", amount: "", type: "expense", description: "" });
+  const [saving, setSaving] = useState(false);
+  const [toast, setToast] = useState("");
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const data = await API.fetchAllTransactions(100);
+      setTxs(data.filter((t) => t.type !== "income" && t.type !== "in"));
+    } catch (e) { console.error(e); }
+    finally { setLoading(false); }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const f = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+
+  const resetForm = () => setForm({ title: "", amount: "", type: "expense", description: "" });
+
+  const handleSubmit = async () => {
+    if (!form.title.trim()) { setToast("กรุณาระบุรายการ"); setTimeout(() => setToast(""), 1800); return; }
+    const amt = parseInt(form.amount);
+    if (!amt || amt <= 0) { setToast("กรุณาระบุจำนวนเงินที่ถูกต้อง"); setTimeout(() => setToast(""), 1800); return; }
+    setSaving(true);
+    try {
+      const accId = FM.accounts?.[0]?.id || null;
+      const tx = await API.recordTransaction(accId, form.type, form.title.trim(), amt, form.description.trim());
+      setTxs((p) => [tx, ...p]);
+      setFormOpen(false);
+      resetForm();
+      setToast("บันทึกรายจ่ายแล้ว");
+      setTimeout(() => setToast(""), 1800);
+      window.__refreshFM?.();
+    } catch (e) {
+      setToast("เกิดข้อผิดพลาด: " + e.message);
+      setTimeout(() => setToast(""), 2500);
+    } finally { setSaving(false); }
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("ต้องการลบรายการนี้?")) return;
+    try {
+      await API.deleteTransaction(id);
+      setTxs((p) => p.filter((t) => t.id !== id));
+      setToast("ลบรายการแล้ว");
+      setTimeout(() => setToast(""), 1800);
+      window.__refreshFM?.();
+    } catch (e) {
+      setToast("ลบไม่สำเร็จ: " + e.message);
+      setTimeout(() => setToast(""), 2500);
+    }
+  };
+
+  const totalExpenses = txs.reduce((s, t) => s + (t.amount || 0), 0);
+
+  return (
+    <div>
+      {/* summary bar */}
+      <div className="grid" style={{ gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
+        {[
+          { label: "รายจ่ายทั้งหมด", val: FM.fmt(totalExpenses), ic: "arrowUp", bg: "var(--bad-bg)", fg: "var(--bad)" },
+          { label: "ยอดรับสะสม", val: FM.fmt(FM.totals.received), ic: "arrowDown", bg: "var(--ok-bg)", fg: "var(--ok)" },
+          { label: "คงเหลือที่ใช้ได้", val: FM.fmt(FM.totals.available), ic: "wallet", bg: "var(--brand-bg)", fg: "var(--brand)" },
+        ].map((s) => (
+          <div key={s.label} className="card stat reveal">
+            <div className="stat-label"><span className="stat-ic" style={{ background: s.bg, color: s.fg }}><Icon name={s.ic} size={17} /></span>{s.label}</div>
+            <div className="stat-val num">{s.val}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* header + add button */}
+      <div className="row between" style={{ marginBottom: 14 }}>
+        <div style={{ fontWeight: 700, fontSize: 15 }}>รายการถอน / ใช้จ่าย ({txs.length})</div>
+        <button className="btn btn-primary btn-sm" onClick={() => { resetForm(); setFormOpen(true); }}>
+          <Icon name="plus" size={16} stroke={2.4} /> เพิ่มรายการ
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="card card-pad" style={{ textAlign: "center", padding: 48 }}>
+          <Icon name="refresh" size={28} style={{ animation: "spin 1s linear infinite", color: "var(--mut)" }} />
+        </div>
+      ) : txs.length === 0 ? (
+        <div className="card card-pad" style={{ textAlign: "center", padding: 48 }}>
+          <Icon name="arrowUp" size={32} style={{ color: "var(--mut)", opacity: .4 }} />
+          <div style={{ fontWeight: 700, fontSize: 15, marginTop: 12 }}>ยังไม่มีรายการ</div>
+          <div className="muted" style={{ fontSize: 13, marginTop: 4 }}>กดปุ่ม "เพิ่มรายการ" เพื่อบันทึกการเบิกหรือค่าใช้จ่าย</div>
+        </div>
+      ) : (
+        <div className="card" style={{ overflow: "hidden" }}>
+          {txs.map((tx, idx) => {
+            const typeLabel = EXPENSE_TYPES.find((t) => t.value === tx.type)?.label || tx.type;
+            const dateStr = tx.created_at ? new Date(tx.created_at).toLocaleDateString("th-TH", { day: "numeric", month: "short", year: "2-digit" }) : "";
+            const timeStr = tx.created_at ? new Date(tx.created_at).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }) : "";
+            return (
+              <div key={tx.id} className="reveal" style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 18px", borderBottom: idx < txs.length - 1 ? "1px solid var(--line)" : "none", animationDelay: idx * .04 + "s" }}>
+                <span style={{ width: 40, height: 40, borderRadius: 12, background: "var(--bad-bg)", color: "var(--bad)", display: "grid", placeItems: "center", flexShrink: 0 }}>
+                  <Icon name="arrowUp" size={18} stroke={2.4} />
+                </span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14 }}>{tx.title}</div>
+                  <div className="muted" style={{ fontSize: 12, marginTop: 2 }}>
+                    {typeLabel}{tx.description ? " · " + tx.description : ""} · {dateStr} {timeStr}
+                  </div>
+                </div>
+                <div className="num" style={{ fontWeight: 700, fontSize: 15, color: "var(--bad)", marginRight: 12 }}>
+                  -{FM.fmt(tx.amount)}
+                </div>
+                <button className="btn btn-ghost btn-sm" style={{ color: "var(--bad)", borderColor: "var(--bad-bg)", padding: "5px 10px" }} onClick={() => handleDelete(tx.id)}>
+                  <Icon name="x" size={14} stroke={2.6} />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Add form sheet */}
+      <Sheet open={formOpen} onClose={() => setFormOpen(false)} title="เพิ่มรายการถอน / ใช้จ่าย" maxW={420}>
+        <div style={{ display: "grid", gap: 14 }}>
+          <div>
+            <label className="login-label">ประเภทรายการ</label>
+            <select className="login-input" value={form.type} onChange={(e) => f("type", e.target.value)} disabled={saving}>
+              {EXPENSE_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="login-label">รายการ / หัวข้อ</label>
+            <input className="login-input" placeholder="เช่น ค่าจัดซื้ออุปกรณ์, ค่าเดินทาง" value={form.title} onChange={(e) => f("title", e.target.value)} disabled={saving} />
+          </div>
+          <div>
+            <label className="login-label">จำนวนเงิน (บาท)</label>
+            <input className="login-input" type="number" placeholder="เช่น 500" value={form.amount} onChange={(e) => f("amount", e.target.value)} disabled={saving} min="1" />
+          </div>
+          <div>
+            <label className="login-label">หมายเหตุ (ไม่บังคับ)</label>
+            <input className="login-input" placeholder="รายละเอียดเพิ่มเติม" value={form.description} onChange={(e) => f("description", e.target.value)} disabled={saving} />
+          </div>
+          <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+            <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleSubmit} disabled={saving}>
+              {saving ? <Icon name="refresh" size={16} style={{ animation: "spin 1s linear infinite" }} /> : <Icon name="check" size={16} />} บันทึก
+            </button>
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setFormOpen(false)} disabled={saving}>ยกเลิก</button>
+          </div>
+        </div>
+      </Sheet>
+
+      <Toast msg={toast} />
+    </div>
+  );
+}
+
+Object.assign(window, { AdminDashboard, AdminPeople, AdminVerify, AdminStudents, AdminAccounts, AdminExpenses, BarChart });

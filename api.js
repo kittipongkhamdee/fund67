@@ -207,6 +207,22 @@ const API = {
     return data || [];
   },
 
+  async fetchAllTransactions(limit = 100) {
+    const { data, error } = await supabase
+      .from("transactions")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return data || [];
+  },
+
+  async deleteTransaction(id) {
+    const { error } = await supabase.from("transactions").delete().eq("id", id);
+    if (error) throw error;
+    return true;
+  },
+
   async recordTransaction(accountId, type, title, amount, description) {
     const { data, error } = await supabase
       .from("transactions")

@@ -10,6 +10,7 @@ const NAV_ADMIN_KEYS = [
   { k: "people", label: "รายบุคคล", icon: "users" },
   { k: "students", label: "จัดการนักศึกษา", icon: "users" },
   { k: "accounts", label: "บัญชีกองทุน", icon: "bank" },
+  { k: "expenses", label: "ถอน / ใช้จ่าย", icon: "arrowUp" },
   { k: "verify", label: "ตรวจสลิป", icon: "shield" },
   { k: "export", label: "ส่งออกรายงาน", icon: "download" },
 ];
@@ -19,7 +20,8 @@ const TITLES = {
   people: ["สรุปรายบุคคล", "สถานะการชำระของนักศึกษาทุกคน"],
   students: ["จัดการรหัสนักศึกษา", "เพิ่ม แก้ไข ลบข้อมูลนักศึกษาในระบบ"],
   accounts: ["บัญชีกองทุน", "เพิ่ม แก้ไข ลบบัญชีธนาคารของกองทุน"],
-  verify: ["ตรวจสอบสลิป", "AI ช่วยตรวจ คุณยืนยันขั้นสุดท้าย"],
+  expenses: ["ถอน / ใช้จ่าย", "บันทึกการเบิกเงินและรายจ่ายจากกองทุน"],
+  verify: ["ตรวจสอบสลิป", "ตรวจสอบสลิปและยืนยันการชำระของนักศึกษา"],
   export: ["ส่งออกรายงาน", "ดาวน์โหลดสรุปรายเดือน / รายปีการศึกษา"],
 };
 
@@ -131,6 +133,7 @@ function App() {
     if (tab === "people") return <AdminPeople />;
     if (tab === "students") return <AdminStudents />;
     if (tab === "accounts") return <AdminAccounts />;
+    if (tab === "expenses") return <AdminExpenses />;
     if (tab === "verify") return <AdminVerify />;
     if (tab === "export") return <ExportView />;
     return null;
