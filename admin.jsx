@@ -555,4 +555,136 @@ function AdminStudents() {
   );
 }
 
-Object.assign(window, { AdminDashboard, AdminPeople, AdminVerify, AdminStudents, BarChart });
+const BANK_COLORS = ["#4E2A84","#0F9D58","#1A73E8","#E53935","#F57C00","#00838F","#37474F"];
+const EMPTY_ACCOUNT = { bank_name: "", bank_code: "", account_number: "", promptpay: "", holder_name: "", status: "active", bank_color: "#4E2A84" };
+
+function AdminAccounts() {
+  const [accounts, setAccounts] = useState(FM.accounts || []);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState(EMPTY_ACCOUNT);
+  const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState("");
+
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(""), 2500); };
+  const normalizeAcc = (a) => ({ ...a, number: a.account_number, holder: a.holder_name, bankName: a.bank_name, bankCode: a.bank_code, bankColor: a.bank_color, active: a.status === "active" });
+
+  const openAdd = () => { setForm(EMPTY_ACCOUNT); setEditId(null); setFormOpen(true); };
+  const openEdit = (a) => {
+    setForm({ bank_name: a.bank_name, bank_code: a.bank_code, account_number: a.account_number, promptpay: a.promptpay || "", holder_name: a.holder_name, status: a.status, bank_color: a.bank_color || "#4E2A84" });
+    setEditId(a.id); setFormOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm("ลบบัญชีนี้?")) return;
+    setLoading(true);
+    try {
+      await API.deleteAccount(id);
+      const updated = accounts.filter((a) => a.id !== id);
+      setAccounts(updated); FM.accounts = updated.map(normalizeAcc);
+      showToast("ลบบัญชีแล้ว");
+    } catch (e) { showToast("เกิดข้อผิดพลาด: " + e.message); }
+    finally { setLoading(false); }
+  };
+
+  const handleSubmit = async () => {
+    if (!form.bank_name.trim() || !form.account_number.trim() || !form.holder_name.trim()) {
+      showToast("กรุณากรอกข้อมูลให้ครบ"); return;
+    }
+    setLoading(true);
+    try {
+      if (editId) {
+        const updated = await API.updateAccount(editId, form);
+        const list = accounts.map((a) => a.id === editId ? updated : a);
+        setAccounts(list); FM.accounts = list.map(normalizeAcc);
+        showToast("แก้ไขบัญชีแล้ว");
+      } else {
+        const created = await API.createAccount(form);
+        const list = [...accounts, created];
+        setAccounts(list); FM.accounts = list.map(normalizeAcc);
+        showToast("เพิ่มบัญชีแล้ว");
+      }
+      setFormOpen(false);
+    } catch (e) { showToast("เกิดข้อผิดพลาด: " + e.message); }
+    finally { setLoading(false); }
+  };
+
+  const f = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+
+  return (
+    <div>
+      <div className="row between" style={{ marginBottom: 16 }}>
+        <div className="section-title">บัญชีธนาคารทั้งหมด {accounts.length} บัญชี</div>
+        <button className="btn btn-primary btn-sm" onClick={openAdd} disabled={loading}>
+          <Icon name="plus" size={16} /> เพิ่มบัญชี
+        </button>
+      </div>
+
+      <div style={{ display: "grid", gap: 12 }}>
+        {accounts.length === 0 && <div className="card card-pad muted" style={{ textAlign: "center" }}>ยังไม่มีบัญชีธนาคาร</div>}
+        {accounts.map((a) => (
+          <div key={a.id} className="card card-pad">
+            <div className="row between" style={{ alignItems: "flex-start" }}>
+              <div className="row gap12">
+                <span style={{ width: 48, height: 48, borderRadius: 13, background: a.bank_color || "#4E2A84", color: "#fff", display: "grid", placeItems: "center", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>
+                  {(a.bank_code || "").slice(0, 2)}
+                </span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 15 }}>{a.bank_name}</div>
+                  <div className="num muted" style={{ fontSize: 13, marginTop: 2 }}>{a.account_number}</div>
+                  <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>{a.holder_name}</div>
+                  {a.promptpay && <div className="muted" style={{ fontSize: 12 }}>พร้อมเพย์: {a.promptpay}</div>}
+                </div>
+              </div>
+              <div className="row gap8">
+                <span className="badge" style={{ background: a.status === "active" ? "var(--ok-bg)" : "var(--mut-bg)", color: a.status === "active" ? "var(--ok)" : "var(--mut)" }}>
+                  {a.status === "active" ? "ใช้งาน" : "ปิดรับ"}
+                </span>
+                <button className="icon-btn" onClick={() => openEdit(a)} disabled={loading} title="แก้ไข"><Icon name="pen" size={16} /></button>
+                <button className="icon-btn" onClick={() => handleDelete(a.id)} disabled={loading} title="ลบ" style={{ color: "var(--bad)" }}><Icon name="trash" size={16} /></button>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <Sheet open={formOpen} onClose={() => setFormOpen(false)} title={editId ? "แก้ไขบัญชี" : "เพิ่มบัญชีใหม่"} maxW={420}>
+        <div style={{ display: "grid", gap: 12 }}>
+          <div><label className="login-label">ชื่อธนาคาร</label>
+            <input className="login-input" placeholder="เช่น ไทยพาณิชย์" value={form.bank_name} onChange={(e) => f("bank_name", e.target.value)} disabled={loading} /></div>
+          <div><label className="login-label">รหัสธนาคาร</label>
+            <input className="login-input" placeholder="เช่น SCB, KBANK" value={form.bank_code} onChange={(e) => f("bank_code", e.target.value.toUpperCase())} disabled={loading} /></div>
+          <div><label className="login-label">เลขบัญชี</label>
+            <input className="login-input" placeholder="เช่น 123-4-56789-0" value={form.account_number} onChange={(e) => f("account_number", e.target.value)} disabled={loading} /></div>
+          <div><label className="login-label">พร้อมเพย์ (ถ้ามี)</label>
+            <input className="login-input" placeholder="เช่น 098-765-4321" value={form.promptpay} onChange={(e) => f("promptpay", e.target.value)} disabled={loading} /></div>
+          <div><label className="login-label">ชื่อเจ้าของบัญชี</label>
+            <input className="login-input" placeholder="เช่น น.ส. ปาณิสรา รัตนพร" value={form.holder_name} onChange={(e) => f("holder_name", e.target.value)} disabled={loading} /></div>
+          <div><label className="login-label">สถานะ</label>
+            <select className="login-input" value={form.status} onChange={(e) => f("status", e.target.value)} disabled={loading}>
+              <option value="active">ใช้งาน (รับเงินได้)</option>
+              <option value="archived">ปิดรับ (บัญชีเก่า)</option>
+            </select></div>
+          <div><label className="login-label">สีธนาคาร</label>
+            <div className="row gap8" style={{ marginTop: 6 }}>
+              {BANK_COLORS.map((c) => (
+                <button key={c} onClick={() => f("bank_color", c)} style={{ width: 28, height: 28, borderRadius: 8, background: c, border: form.bank_color === c ? "3px solid var(--ink)" : "2px solid transparent", cursor: "pointer" }} />
+              ))}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+            <button className="btn btn-primary" style={{ flex: 1 }} onClick={handleSubmit} disabled={loading}>
+              {loading ? <Icon name="refresh" size={16} style={{ animation: "spin 1s linear infinite" }} /> : <Icon name="check" size={16} />}
+              {editId ? "บันทึก" : "เพิ่ม"}
+            </button>
+            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={() => setFormOpen(false)} disabled={loading}>ยกเลิก</button>
+          </div>
+        </div>
+      </Sheet>
+
+      <Toast msg={toast} />
+    </div>
+  );
+}
+
+Object.assign(window, { AdminDashboard, AdminPeople, AdminVerify, AdminStudents, AdminAccounts, BarChart });

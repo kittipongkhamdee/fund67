@@ -8,7 +8,8 @@ const NAV_STUDENT = [
 const NAV_ADMIN_KEYS = [
   { k: "dashboard", label: "สรุปยอด", icon: "home" },
   { k: "people", label: "รายบุคคล", icon: "users" },
-  { k: "students", label: "เพิ่มรหัสนักศึกษา", icon: "plus" },
+  { k: "students", label: "จัดการนักศึกษา", icon: "users" },
+  { k: "accounts", label: "บัญชีกองทุน", icon: "bank" },
   { k: "verify", label: "ตรวจสลิป", icon: "shield" },
   { k: "export", label: "ส่งออกรายงาน", icon: "download" },
 ];
@@ -17,6 +18,7 @@ const TITLES = {
   dashboard: ["สรุปยอดกองทุน", "ภาพรวมการเงินทุกบัญชี อัปเดตแบบเรียลไทม์"],
   people: ["สรุปรายบุคคล", "สถานะการชำระของนักศึกษาทุกคน"],
   students: ["จัดการรหัสนักศึกษา", "เพิ่ม แก้ไข ลบข้อมูลนักศึกษาในระบบ"],
+  accounts: ["บัญชีกองทุน", "เพิ่ม แก้ไข ลบบัญชีธนาคารของกองทุน"],
   verify: ["ตรวจสอบสลิป", "AI ช่วยตรวจ คุณยืนยันขั้นสุดท้าย"],
   export: ["ส่งออกรายงาน", "ดาวน์โหลดสรุปรายเดือน / รายปีการศึกษา"],
 };
@@ -121,6 +123,7 @@ function App() {
     if (tab === "dashboard") return <AdminDashboard />;
     if (tab === "people") return <AdminPeople />;
     if (tab === "students") return <AdminStudents />;
+    if (tab === "accounts") return <AdminAccounts />;
     if (tab === "verify") return <AdminVerify />;
     if (tab === "export") return <ExportView />;
     return null;

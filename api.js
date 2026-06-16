@@ -158,6 +158,24 @@ const API = {
     return data || [];
   },
 
+  async createAccount(data) {
+    const { data: d, error } = await supabase.from("bank_accounts").insert([data]).select();
+    if (error) throw error;
+    return d[0];
+  },
+
+  async updateAccount(id, updates) {
+    const { data: d, error } = await supabase.from("bank_accounts").update(updates).eq("id", id).select();
+    if (error) throw error;
+    return d[0];
+  },
+
+  async deleteAccount(id) {
+    const { error } = await supabase.from("bank_accounts").delete().eq("id", id);
+    if (error) throw error;
+    return true;
+  },
+
   // --- Transactions / Ledger ---
   async fetchLedger(accountId, limit = 20) {
     let query = supabase
