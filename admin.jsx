@@ -186,7 +186,8 @@ function AdminPeople() {
 
   const cm = FM.countFor(mi);
   const cellColor = { paid: ["var(--ok-bg)", "var(--ok)"], unpaid: ["var(--bad-bg)", "var(--bad)"],
-    pending: ["var(--warn-bg)", "var(--warn)"], future: ["transparent", "var(--line2)"] };
+    pending: ["var(--warn-bg)", "var(--warn)"], future: ["transparent", "var(--line2)"],
+    rejected: ["var(--mut-bg)", "var(--mut)"] };
 
   return (
     <div>

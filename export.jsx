@@ -57,7 +57,7 @@ function ExportView() {
     if (mode === "month") {
       csv += "รหัสนักศึกษา,ชื่อ-นามสกุล,สถานะ,ยอด(บาท)\n";
       sorted.forEach((s) => {
-        const st = { paid: "จ่ายแล้ว", unpaid: "ค้างจ่าย", pending: "รอตรวจ", future: "-" }[s.pays[mi]];
+        const st = { paid: "จ่ายแล้ว", unpaid: "ค้างจ่าย", pending: "รอตรวจ", rejected: "ปฏิเสธ", future: "-" }[s.pays[mi]] || "-";
         csv += `${s.id},${s.name},${st},${s.pays[mi] === "paid" ? FM.MONTHLY_FEE : 0}\n`;
       });
     } else {
@@ -168,7 +168,7 @@ function ExportView() {
               <tbody>
                 {sorted.map((s, i) => {
                   const st = s.pays[mi];
-                  const meta = { paid: ["จ่ายแล้ว", "#0E8F5B"], unpaid: ["ค้างจ่าย", "#D1453B"], pending: ["รอตรวจ", "#B7791F"], future: ["-", "#8A8C93"] }[st];
+                  const meta = { paid: ["จ่ายแล้ว", "#0E8F5B"], unpaid: ["ค้างจ่าย", "#D1453B"], pending: ["รอตรวจ", "#B7791F"], rejected: ["ปฏิเสธ", "#8A8C93"], future: ["-", "#8A8C93"] }[st] || ["-", "#8A8C93"];
                   return (
                     <tr key={s.id}>
                       <td style={{ ...cell, color: "#8A8C93", fontFamily: "var(--num)" }}>{i + 1}</td>
