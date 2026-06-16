@@ -24,9 +24,10 @@ async function initializeFromSupabase() {
       key: m.month_key,
     }));
 
-    // Find current month (latest month or default to index 7 = ม.ค.)
-    const currentMonthIndex = Math.min(7, months.length - 1);
-    const thisMonth = months[currentMonthIndex];
+    // Find current month: prefer is_current flag, else default to index 7 (ม.ค.)
+    const currentFlagIdx = months.findIndex((m) => m.is_current);
+    const currentMonthIndex = currentFlagIdx >= 0 ? currentFlagIdx : Math.min(7, months.length - 1);
+    const thisMonth = months[currentMonthIndex] || { short: "-", full: "-", key: "-", month_short: "-", month_full: "-", month_key: "-" };
 
     // Helper to build payment status array for a student
     const buildPaymentStatus = async (studentId) => {
