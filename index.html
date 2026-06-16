@@ -251,11 +251,15 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
   .botnav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:40;
     background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
     border-top:1px solid rgba(0,0,0,.08);
-    padding:8px 6px max(8px, env(safe-area-inset-bottom));
-    justify-content:space-around}
-  .bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 12px;border-radius:12px;
-    color:var(--mut);font-size:10.5px;font-weight:600;transition:color .2s ease;flex:1;max-width:90px;min-height:44px}
-  .bn-item.active{color:var(--brand)}
+    padding:6px 4px max(6px, env(safe-area-inset-bottom));
+    overflow-x:auto;overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;gap:2px}
+  .botnav::-webkit-scrollbar{display:none}
+  .bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;border-radius:10px;
+    color:var(--mut);font-size:10px;font-weight:600;transition:color .2s ease;
+    flex-shrink:0;min-width:60px;min-height:52px;white-space:nowrap}
+  .bn-item.active{color:var(--brand);background:var(--brand-tint)}
   .bn-item.active .bn-ic{transform:translateY(-1px)}
   .grid-2{grid-template-columns:1fr !important}
   .hide-mobile{display:none !important}

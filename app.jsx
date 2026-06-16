@@ -6,13 +6,13 @@ const NAV_STUDENT = [
   { k: "home", label: "กองทุนของฉัน", icon: "wallet" },
 ];
 const NAV_ADMIN_KEYS = [
-  { k: "dashboard", label: "สรุปยอด", icon: "home" },
-  { k: "people", label: "รายบุคคล", icon: "users" },
-  { k: "students", label: "จัดการนักศึกษา", icon: "users" },
-  { k: "accounts", label: "บัญชีกองทุน", icon: "bank" },
-  { k: "expenses", label: "ถอน / ใช้จ่าย", icon: "arrowUp" },
-  { k: "verify", label: "ตรวจสลิป", icon: "shield" },
-  { k: "export", label: "ส่งออกรายงาน", icon: "download" },
+  { k: "dashboard", label: "สรุปยอด", icon: "home", short: "สรุปยอด" },
+  { k: "people", label: "รายบุคคล", icon: "users", short: "รายบุคคล" },
+  { k: "students", label: "จัดการนักศึกษา", icon: "users", short: "นักศึกษา" },
+  { k: "accounts", label: "บัญชีกองทุน", icon: "bank", short: "บัญชี" },
+  { k: "expenses", label: "ถอน / ใช้จ่าย", icon: "arrowUp", short: "รายจ่าย" },
+  { k: "verify", label: "ตรวจสลิป", icon: "shield", short: "ตรวจสลิป" },
+  { k: "export", label: "ส่งออกรายงาน", icon: "download", short: "ส่งออก" },
 ];
 const TITLES = {
   home: ["กองทุนของฉัน", "ชำระค่ากองทุนและติดตามสถานะรายเดือน"],
@@ -242,7 +242,7 @@ function App() {
                 <Icon name={it.icon} size={21} />
                 {it.badge ? <span style={{ position: "absolute", top: -4, right: -8, background: "var(--bad)", color: "#fff", fontSize: 9, fontWeight: 700, minWidth: 15, height: 15, borderRadius: 8, display: "grid", placeItems: "center", padding: "0 4px" }}>{it.badge}</span> : null}
               </span>
-              {it.label.split(" ")[0]}
+              {it.short || it.label}
             </button>
           ))}
           {role === "student" && (
