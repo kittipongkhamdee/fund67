@@ -152,7 +152,10 @@ function AdminDashboard() {
               </div>
             ) : FM.ledger.slice(0, 8).map((tx) => {
               const isIn = tx.type === "income" || tx.type === "in";
-              const dateStr = tx.created_at ? new Date(tx.created_at).toLocaleDateString("th-TH", { day: "numeric", month: "short" }) : (tx.when || "");
+              const typeLabel = isIn ? "รับเข้า" : "ถอน / จ่าย";
+              const dt = tx.created_at ? new Date(tx.created_at) : null;
+              const dateStr = dt ? dt.toLocaleDateString("th-TH", { day: "numeric", month: "short" }) : (tx.when || "");
+              const timeStr = dt ? dt.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" }) : "";
               return (
                 <div key={tx.id} className="lrow">
                   <span className="lrow-ic" style={{ background: isIn ? "var(--ok-bg)" : "var(--bad-bg)", color: isIn ? "var(--ok)" : "var(--bad)" }}>
@@ -160,10 +163,10 @@ function AdminDashboard() {
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tx.title}</div>
-                    <div className="muted" style={{ fontSize: 11.5 }}>{dateStr}{tx.description ? " · " + tx.description : ""}</div>
+                    <div className="muted" style={{ fontSize: 11.5 }}>{typeLabel} · {dateStr} เวลา {timeStr}{tx.description ? " · " + tx.description : ""}</div>
                   </div>
-                  <div className="num" style={{ fontWeight: 700, fontSize: 14, color: isIn ? "var(--ok)" : "var(--ink)" }}>
-                    {isIn ? "+" : ""}{FM.fmt(tx.amount)}
+                  <div className="num" style={{ fontWeight: 700, fontSize: 14, color: isIn ? "var(--ok)" : "var(--bad)" }}>
+                    {isIn ? "+" : "-"}{FM.fmt(tx.amount)}
                   </div>
                 </div>
               );
