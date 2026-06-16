@@ -165,10 +165,15 @@ function PayFlow({ open, onClose, onPaid, studentId }) {
       if (alreadyExists) {
         if (alreadyExists.status === "paid") {
           setCashErr("ชำระเงินเดือนนี้เรียบร้อยแล้ว");
-        } else {
-          // already pending — treat as success
-          setStep("cash-done");
+          return;
         }
+        if (alreadyExists.status === "pending") {
+          setStep("cash-done");
+          return;
+        }
+        // rejected — reset to pending so admin can re-verify
+        await API.uploadSlip(alreadyExists.id, null, null);
+        setStep("cash-done");
         return;
       }
       await API.createPendingPayment(sid, monthPeriodId, FM.MONTHLY_FEE, null);
