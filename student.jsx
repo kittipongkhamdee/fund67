@@ -263,7 +263,7 @@ function StudentHome({ paid, onPay, student = FM.me }) {
       <div className="card card-pad mt16 reveal" style={{ animationDelay: ".16s" }}>
         <div className="section-title">สถานะรายเดือนของฉัน</div>
         <div className="muted" style={{ fontSize: 12.5, marginBottom: 14 }}>ปีการศึกษา 2569</div>
-        <div className="grid" style={{ gridTemplateColumns: "repeat(6,1fr)", gap: 10 }}>
+        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(48px,1fr))", gap: 10 }}>
           {FM.months.map((m, i) => {
             const st = i === FM.currentMonthIndex ? thisStatus : me.pays[i];
             const c = { paid: ["var(--ok-bg)", "var(--ok)"], unpaid: ["var(--bad-bg)", "var(--bad)"],

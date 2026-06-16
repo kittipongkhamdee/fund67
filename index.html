@@ -152,7 +152,7 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
 
 /* segmented */
 .seg{display:inline-flex;background:var(--bg2);border-radius:11px;padding:3px;gap:2px}
-.seg button{padding:7px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink2);transition:.16s}
+.seg button{padding:8px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--ink2);transition:background .2s ease,color .2s ease,box-shadow .2s ease;min-height:36px}
 .seg button.on{background:var(--surface);color:var(--ink);box-shadow:var(--sh-sm)}
 
 /* sheet / modal */
@@ -222,7 +222,7 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
 .login-demo-btn:hover{background:var(--brand-bg);border-color:var(--brand)}
 .login-mobile-brand{display:none}
 @media(max-width:680px){
-  .login-bg{padding:16px;align-items:flex-start;padding-top:40px}
+  .login-bg{padding:16px;padding-top:40px;place-items:start center;align-items:start}
   .login-left{display:none}
   .login-panel{grid-template-columns:1fr;border-radius:20px}
   .login-right{padding:28px 22px}
