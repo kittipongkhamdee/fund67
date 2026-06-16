@@ -129,14 +129,26 @@ async function initializeFromSupabase() {
   }
 }
 
+function showLoadError(err) {
+  const el = document.getElementById("app-loading");
+  if (el) el.innerHTML = `
+    <div style="text-align:center;font-family:'Anuphan',system-ui,sans-serif;padding:32px;max-width:360px">
+      <div style="font-size:32px;margin-bottom:12px">⚠️</div>
+      <div style="font-size:17px;font-weight:700;color:#16181D;margin-bottom:8px">โหลดข้อมูลไม่สำเร็จ</div>
+      <div style="font-size:14px;color:#54565E;margin-bottom:20px">ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาตรวจสอบการเชื่อมต่อและลองใหม่</div>
+      <div style="font-size:12px;color:#8A8C93;background:#F4F3EF;padding:8px 12px;border-radius:8px;margin-bottom:20px;word-break:break-all">${err?.message || err}</div>
+      <button onclick="location.reload()" style="background:#0B5FFF;color:#fff;border:none;padding:10px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer">โหลดใหม่</button>
+    </div>`;
+}
+
 // Initialize when Supabase client is ready
 if (window.supabase) {
   initializeFromSupabase().catch((err) => {
     console.error("FM initialization failed:", err);
-    // data.js will set demo FM and call __startApp
+    showLoadError(err);
   });
 } else {
-  console.warn("Supabase client not loaded yet");
+  showLoadError("Supabase client not loaded");
 }
 
 Object.assign(window, { initializeFromSupabase });
