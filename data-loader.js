@@ -8,13 +8,15 @@ async function initializeFromSupabase() {
     const MONTHLY_FEE = 100;
 
     // Fetch all required data from Supabase
-    const [students, rawMonths, accounts, ledger, queue, settings] = await Promise.all([
+    const [students, rawMonths, accounts, ledger, queue, settings, allPaidPayments, allTransactions] = await Promise.all([
       API.fetchStudents(),
       API.fetchMonthPeriods(),
       API.fetchAccounts(),
       API.fetchLedger(null, 50),
       API.fetchVerificationQueue(),
       API.fetchSettings(),
+      API.fetchAllPayments({ status: "paid" }),
+      API.fetchLedger(null, 500),
     ]);
 
     // Normalize month field names (Supabase → app shorthand)
@@ -75,12 +77,6 @@ async function initializeFromSupabase() {
       return { paid, pending, unpaid, total: enrichedStudents.length };
     };
 
-    // Calculate monthly collected amounts
-    const monthlyCollected = months.map((m, mi) => {
-      if (mi > currentMonthIndex) return null;
-      return countFor(mi).paid * MONTHLY_FEE;
-    });
-
     // Format functions
     const fmt = (n) => (n < 0 ? "-" : "") + "฿" + Math.abs(n).toLocaleString("th-TH");
     const fmtNum = (n) => Math.abs(n).toLocaleString("th-TH");
@@ -96,19 +92,30 @@ async function initializeFromSupabase() {
       active: a.status === "active",
     }));
 
-    // Calculate totals from accounts
-    // balance per account = received - withdrawn (real calculation)
-    const normalizedWithBalance = normalizedAccounts.map((a) => ({
-      ...a,
-      balance: (a.received || 0) - (a.withdrawn || 0),
-    }));
+    // Calculate totals from REAL payment/transaction data
+    const totalReceived = allPaidPayments.reduce((s, p) => s + (p.amount || 0), 0);
+    const totalWithdrawn = allTransactions
+      .filter((t) => t.type === "withdrawal" || t.type === "expense")
+      .reduce((s, t) => s + (t.amount || 0), 0);
+    const totalBalance = totalReceived - totalWithdrawn;
+
+    const normalizedWithBalance = normalizedAccounts.map((a) => ({ ...a, balance: 0 }));
 
     const totals = {
-      received: normalizedWithBalance.reduce((s, a) => s + (a.received || 0), 0),
-      withdrawn: normalizedWithBalance.reduce((s, a) => s + (a.withdrawn || 0), 0),
-      balance: normalizedWithBalance.reduce((s, a) => s + a.balance, 0),
+      received: totalReceived,
+      withdrawn: totalWithdrawn,
+      balance: totalBalance,
+      available: totalBalance,
     };
-    totals.available = totals.balance;
+
+    // Calculate per-month collected amounts from actual paid payments
+    const monthlyCollectedReal = months.map((m, mi) => {
+      if (mi > currentMonthIndex) return null;
+      const monthPaid = allPaidPayments.filter(
+        (p) => p.month_periods?.month_key === m.month_key
+      );
+      return monthPaid.reduce((s, p) => s + (p.amount || 0), 0);
+    });
 
     // Initialize FM object
     window.FM = {
@@ -122,7 +129,7 @@ async function initializeFromSupabase() {
       ledger: ledger || [],
       queue: queue || [],
       countFor,
-      monthlyCollected,
+      monthlyCollected: monthlyCollectedReal,
       thisMonth,
       fmt,
       fmtNum,
