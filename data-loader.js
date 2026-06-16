@@ -48,8 +48,7 @@ async function initializeFromSupabase() {
       students.map(async (s) => ({
         ...s,
         pays: await buildPaymentStatus(s.id),
-        nick: s.name.split(" ")[0], // First word as nick
-        avatarHue: (parseInt(s.id.slice(-2)) * 13) % 360, // Deterministic hue from ID
+        avatarHue: s.avatar_hue || (parseInt(s.id.slice(-2)) * 13) % 360,
       }))
     );
 

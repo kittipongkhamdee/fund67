@@ -409,13 +409,13 @@ function AdminStudents() {
       if (editId) {
         await API.updateStudent(editId, {
           name: formData.name,
-          avatarHue: formData.avatarHue,
+          avatar_hue: formData.avatarHue,
         });
       } else {
         await API.createStudent({
           id: formData.id,
           name: formData.name,
-          avatarHue: formData.avatarHue,
+          avatar_hue: formData.avatarHue,
         });
       }
 
