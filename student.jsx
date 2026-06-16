@@ -146,7 +146,7 @@ function PayFlow({ open, onClose, onPaid }) {
 
   return (
     <>
-      <Sheet open={open} onClose={onClose} title={step === "qr" ? "ชำระค่ากองทุนเดือน " + FM.thisMonth.short : "ตรวจสอบสลิป"} maxW={470}>
+      <Sheet open={open} onClose={onClose} title={step === "qr" ? "ชำระค่ากองทุนเดือน" + FM.thisMonth.full : "ตรวจสอบสลิป"} maxW={470}>
         {step === "qr" ? (
           <div>
             <div className="row between" style={{ marginBottom: 14 }}>
