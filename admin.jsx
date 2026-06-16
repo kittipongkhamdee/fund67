@@ -34,8 +34,8 @@ function AdminDashboard() {
   const [acc, setAcc] = useState("all"); // all | scb-current | kbank-old
   const t = FM.totals;
   const view = acc === "all"
-    ? { received: t.received, withdrawn: t.withdrawn, balance: t.balance, available: t.available, reserved: t.reserved }
-    : (() => { const a = FM.accounts.find((x) => x.id === acc); return { received: a.received, withdrawn: a.withdrawn, balance: a.balance, available: a.balance, reserved: 0 }; })();
+    ? { received: t.received, withdrawn: t.withdrawn, balance: t.balance, available: t.available }
+    : (() => { const a = FM.accounts.find((x) => x.id === acc); return { received: a.received || 0, withdrawn: a.withdrawn || 0, balance: a.balance || 0, available: a.balance || 0 }; })();
 
   const cm = FM.countFor(FM.currentMonthIndex);
   const paidPct = cm.total > 0 ? cm.paid / cm.total : 0;
@@ -44,7 +44,7 @@ function AdminDashboard() {
     { label: "ยอดเงินทั้งหมด", val: view.received, ic: "trend", bg: "var(--brand-bg)", fg: "var(--brand)", glow: "#0B5FFF", foot: "รับเข้าสะสมทุกบัญชี" },
     { label: "คงเหลือ", val: view.balance, ic: "wallet", bg: "var(--ok-bg)", fg: "var(--ok)", glow: "#0E8F5B", foot: "ยอดในบัญชีปัจจุบัน" },
     { label: "ถอน / ใช้จ่าย", val: view.withdrawn, ic: "arrowUp", bg: "var(--bad-bg)", fg: "var(--bad)", glow: "#D1453B", foot: "รายจ่ายสะสม" },
-    { label: "คงเหลือที่ใช้ได้", val: view.available, ic: "shield", bg: "var(--warn-bg)", fg: "var(--warn)", glow: "#B7791F", foot: view.reserved ? "กันไว้ " + FM.fmt(view.reserved) : "พร้อมใช้งาน" },
+    { label: "คงเหลือที่ใช้ได้", val: view.available, ic: "shield", bg: "var(--warn-bg)", fg: "var(--warn)", glow: "#B7791F", foot: "ยอดรับ − ยอดเบิกจ่าย" },
   ];
 
   return (

@@ -97,13 +97,18 @@ async function initializeFromSupabase() {
     }));
 
     // Calculate totals from accounts
+    // balance per account = received - withdrawn (real calculation)
+    const normalizedWithBalance = normalizedAccounts.map((a) => ({
+      ...a,
+      balance: (a.received || 0) - (a.withdrawn || 0),
+    }));
+
     const totals = {
-      received: normalizedAccounts.reduce((a, acc) => a + (acc.received || 0), 0),
-      withdrawn: normalizedAccounts.reduce((a, acc) => a + (acc.withdrawn || 0), 0),
-      balance: normalizedAccounts.reduce((a, acc) => a + (acc.balance || 0), 0),
-      reserved: 1200,
+      received: normalizedWithBalance.reduce((s, a) => s + (a.received || 0), 0),
+      withdrawn: normalizedWithBalance.reduce((s, a) => s + (a.withdrawn || 0), 0),
+      balance: normalizedWithBalance.reduce((s, a) => s + a.balance, 0),
     };
-    totals.available = totals.balance - totals.reserved;
+    totals.available = totals.balance;
 
     // Initialize FM object
     window.FM = {
@@ -112,7 +117,7 @@ async function initializeFromSupabase() {
       currentMonthIndex,
       students: enrichedStudents,
       me,
-      accounts: normalizedAccounts,
+      accounts: normalizedWithBalance,
       totals,
       ledger: ledger || [],
       queue: queue || [],
