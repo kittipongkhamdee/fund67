@@ -5,16 +5,19 @@
 async function initializeFromSupabase() {
   try {
     const ACADEMIC_YEAR_ID = "2569"; // ปีการศึกษา 2569
-    const MONTHLY_FEE = 100;
+
+    // Fetch settings first so MONTHLY_FEE and SYSTEM_NAME can be read from DB
+    const settings = await API.fetchSettings();
+    const MONTHLY_FEE = parseInt(settings?.monthly_fee) || 100;
+    const SYSTEM_NAME = settings?.system_name || "กองทุนรุ่น 67";
 
     // Fetch all required data from Supabase
-    const [students, rawMonths, accounts, ledger, queue, settings, allPaidPayments, allTransactions] = await Promise.all([
+    const [students, rawMonths, accounts, ledger, queue, allPaidPayments, allTransactions] = await Promise.all([
       API.fetchStudents(),
       API.fetchMonthPeriods(),
       API.fetchAccounts(),
       API.fetchLedger(null, 50),
       API.fetchVerificationQueue(),
-      API.fetchSettings(),
       API.fetchAllPayments({ status: "paid" }),
       API.fetchAllTransactions(500),
     ]);
@@ -124,6 +127,7 @@ async function initializeFromSupabase() {
     // Initialize FM object
     window.FM = {
       MONTHLY_FEE,
+      SYSTEM_NAME,
       months,
       currentMonthIndex,
       students: enrichedStudents,

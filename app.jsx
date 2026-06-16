@@ -25,7 +25,9 @@ const TITLES = {
   export: ["ส่งออกรายงาน", "ดาวน์โหลดสรุปรายเดือน / รายปีการศึกษา"],
 };
 
-function ChangePasswordSheet({ open, onClose, onNameChange }) {
+function ChangePasswordSheet({ open, onClose, onNameChange, onSystemChange }) {
+  const [systemName, setSystemName] = useState("");
+  const [monthlyFee, setMonthlyFee] = useState("");
   const [adminName, setAdminName] = useState("");
   const [cur, setCur] = useState("");
   const [next, setNext] = useState("");
@@ -35,15 +37,21 @@ function ChangePasswordSheet({ open, onClose, onNameChange }) {
   const [ok, setOk] = useState(false);
 
   useEffect(() => {
-    if (open) setAdminName(FM.settings?.admin_name || "");
+    if (open) {
+      setSystemName(FM.settings?.system_name || FM.SYSTEM_NAME || "กองทุนรุ่น 67");
+      setMonthlyFee(String(FM.settings?.monthly_fee || FM.MONTHLY_FEE || 100));
+      setAdminName(FM.settings?.admin_name || "");
+    }
   }, [open]);
 
   const reset = () => { setCur(""); setNext(""); setConfirm(""); setErr(""); setOk(false); };
 
   const handleSave = async () => {
     setErr("");
-    if (!adminName.trim()) { setErr("กรุณากรอกชื่อผู้ดูแลระบบ"); return; }
-    const creds = { id: FM.settings?.admin_id || "ADMIN001", password: FM.settings?.admin_password || "1234" };
+    if (!systemName.trim()) { setErr("กรุณากรอกชื่อระบบ"); return; }
+    const fee = parseInt(monthlyFee);
+    if (!fee || fee < 1) { setErr("ยอดเงินต่อเดือนต้องเป็นตัวเลขมากกว่า 0"); return; }
+    const creds = { password: FM.settings?.admin_password || "1234" };
     if (next || cur || confirm) {
       if (cur !== creds.password) { setErr("รหัสผ่านปัจจุบันไม่ถูกต้อง"); return; }
       if (next.length < 4) { setErr("รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร"); return; }
@@ -51,13 +59,22 @@ function ChangePasswordSheet({ open, onClose, onNameChange }) {
     }
     setLoading(true);
     try {
-      await API.updateSetting("admin_name", adminName.trim());
-      FM.settings.admin_name = adminName.trim();
+      await Promise.all([
+        API.updateSetting("system_name", systemName.trim()),
+        API.updateSetting("monthly_fee", String(fee)),
+        adminName.trim() ? API.updateSetting("admin_name", adminName.trim()) : Promise.resolve(),
+      ]);
+      FM.settings.system_name = systemName.trim();
+      FM.settings.monthly_fee = String(fee);
+      FM.SYSTEM_NAME = systemName.trim();
+      FM.MONTHLY_FEE = fee;
+      if (adminName.trim()) FM.settings.admin_name = adminName.trim();
       if (next && cur) {
         await API.updateSetting("admin_password", next);
         FM.settings.admin_password = next;
       }
-      onNameChange?.(adminName.trim());
+      onNameChange?.(adminName.trim() || FM.settings.admin_name);
+      onSystemChange?.(systemName.trim(), fee);
       setOk(true);
       setTimeout(() => { onClose(); reset(); }, 1500);
     } catch (e) {
@@ -68,33 +85,46 @@ function ChangePasswordSheet({ open, onClose, onNameChange }) {
   };
 
   return (
-    <Sheet open={open} onClose={() => { onClose(); reset(); }} title="ตั้งค่าผู้ดูแลระบบ" maxW={400}>
+    <Sheet open={open} onClose={() => { onClose(); reset(); }} title="ตั้งค่าระบบ" maxW={420}>
       {ok ? (
         <div style={{ textAlign: "center", padding: "24px 0", color: "var(--ok)", fontWeight: 600 }}>
           <Icon name="check" size={32} /><div style={{ marginTop: 8 }}>บันทึกสำเร็จ</div>
         </div>
       ) : (
         <div style={{ display: "grid", gap: 14 }}>
-          <div>
-            <label className="login-label">ชื่อผู้ดูแลระบบ</label>
-            <input className="login-input" type="text" placeholder="เช่น นายสุวัชชัย พูนยิ่งยงค์" value={adminName} onChange={(e) => setAdminName(e.target.value)} disabled={loading} />
+          <div style={{ display: "grid", gap: 14 }}>
+            <div className="muted" style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em" }}>ข้อมูลระบบ</div>
+            <div>
+              <label className="login-label">ชื่อระบบ / กองทุน</label>
+              <input className="login-input" type="text" placeholder="เช่น กองทุนรุ่น 67" value={systemName} onChange={(e) => setSystemName(e.target.value)} disabled={loading} />
+            </div>
+            <div>
+              <label className="login-label">ยอดเงินต่อเดือน (บาท)</label>
+              <input className="login-input" type="number" min="1" placeholder="100" value={monthlyFee} onChange={(e) => setMonthlyFee(e.target.value)} disabled={loading} />
+            </div>
           </div>
 
-          <div style={{ borderTop: "1px solid var(--line)", paddingTop: 14 }}>
-            <div className="muted" style={{ fontSize: 12, fontWeight: 600, marginBottom: 12 }}>เปลี่ยนรหัสผ่าน (ไม่บังคับ)</div>
-            <div style={{ display: "grid", gap: 12 }}>
-              <div>
-                <label className="login-label">รหัสผ่านปัจจุบัน</label>
-                <input className="login-input" type="password" placeholder="••••••••" value={cur} onChange={(e) => setCur(e.target.value)} disabled={loading} />
-              </div>
-              <div>
-                <label className="login-label">รหัสผ่านใหม่</label>
-                <input className="login-input" type="password" placeholder="••••••••" value={next} onChange={(e) => setNext(e.target.value)} disabled={loading} />
-              </div>
-              <div>
-                <label className="login-label">ยืนยันรหัสผ่านใหม่</label>
-                <input className="login-input" type="password" placeholder="••••••••" value={confirm} onChange={(e) => setConfirm(e.target.value)} disabled={loading} />
-              </div>
+          <div style={{ borderTop: "1px solid var(--line)", paddingTop: 14, display: "grid", gap: 14 }}>
+            <div className="muted" style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em" }}>ผู้ดูแลระบบ</div>
+            <div>
+              <label className="login-label">ชื่อผู้ดูแลระบบ</label>
+              <input className="login-input" type="text" placeholder="เช่น นายสุวัชชัย พูนยิ่งยงค์" value={adminName} onChange={(e) => setAdminName(e.target.value)} disabled={loading} />
+            </div>
+          </div>
+
+          <div style={{ borderTop: "1px solid var(--line)", paddingTop: 14, display: "grid", gap: 12 }}>
+            <div className="muted" style={{ fontSize: 11.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: ".06em" }}>เปลี่ยนรหัสผ่าน (ไม่บังคับ)</div>
+            <div>
+              <label className="login-label">รหัสผ่านปัจจุบัน</label>
+              <input className="login-input" type="password" placeholder="••••••••" value={cur} onChange={(e) => setCur(e.target.value)} disabled={loading} />
+            </div>
+            <div>
+              <label className="login-label">รหัสผ่านใหม่</label>
+              <input className="login-input" type="password" placeholder="••••••••" value={next} onChange={(e) => setNext(e.target.value)} disabled={loading} />
+            </div>
+            <div>
+              <label className="login-label">ยืนยันรหัสผ่านใหม่</label>
+              <input className="login-input" type="password" placeholder="••••••••" value={confirm} onChange={(e) => setConfirm(e.target.value)} disabled={loading} />
             </div>
           </div>
 
@@ -120,6 +150,7 @@ function App() {
   const [changePw, setChangePw] = useState(false);
   const [fmVer, setFmVer] = useState(0);
   const [adminName, setAdminName] = useState(FM.settings?.admin_name || "ผู้ดูแลระบบ");
+  const [systemName, setSystemName] = useState(FM.SYSTEM_NAME || "กองทุนรุ่น 67");
 
   // Called after any action that changes DB data so FM re-fetches
   const refreshFM = async () => {
@@ -173,7 +204,7 @@ function App() {
         <div className="brand">
           <div className="brand-mark"><Icon name="wallet" size={20} stroke={2.2} /></div>
           <div>
-            <div className="brand-name">กองทุนรุ่น 67</div>
+            <div className="brand-name">{systemName}</div>
             <div className="brand-sub">{FM.students.length} คน</div>
           </div>
         </div>
@@ -284,7 +315,7 @@ function App() {
       </main>
 
       <PayFlow open={pay} onClose={() => setPay(false)} onPaid={onPaid} />
-      <ChangePasswordSheet open={changePw} onClose={() => setChangePw(false)} onNameChange={(n) => setAdminName(n)} />
+      <ChangePasswordSheet open={changePw} onClose={() => setChangePw(false)} onNameChange={(n) => setAdminName(n)} onSystemChange={(n) => setSystemName(n)} />
       <Toast msg={toast} />
     </div>
   );

@@ -68,7 +68,7 @@ function LoginScreen({ onLogin }) {
                 <Icon name="wallet" size={26} stroke={2.2} />
               </div>
               <div>
-                <div style={{ fontWeight: 800, fontSize: 19, letterSpacing: "-.01em" }}>กองทุนรุ่น 67</div>
+                <div style={{ fontWeight: 800, fontSize: 19, letterSpacing: "-.01em" }}>{FM.SYSTEM_NAME || "กองทุนรุ่น 67"}</div>
                 <div style={{ fontSize: 12.5, opacity: .8, fontWeight: 500, marginTop: 1 }}>ปีการศึกษา 2569</div>
               </div>
             </div>
@@ -99,7 +99,7 @@ function LoginScreen({ onLogin }) {
               <Icon name="wallet" size={22} stroke={2.2} />
             </div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 18 }}>กองทุนรุ่น 67</div>
+              <div style={{ fontWeight: 800, fontSize: 18 }}>{FM.SYSTEM_NAME || "กองทุนรุ่น 67"}</div>
               <div className="muted" style={{ fontSize: 12 }}>ระบบจัดการกองทุนนักศึกษา</div>
             </div>
           </div>
