@@ -285,6 +285,13 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
 .fade-swap{animation:fadeswap .4s ease}
 @keyframes fadeswap{from{transform:translateY(6px)}to{transform:none}}
 
+/* responsive 2-col grid that stacks on mobile */
+.grid-halves{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-halves-chart{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+@media(max-width:860px){
+  .grid-halves,.grid-halves-chart{grid-template-columns:1fr}
+}
+
 /* ─── Admin table → mobile card list ─── */
 @media (max-width:620px){
   .tbl-wrap{overflow:visible}
@@ -298,11 +305,27 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
   }
   .tbl tbody tr:last-child{border-bottom:none}
   .tbl td{padding:0;border:none;font-size:13.5px}
-  /* hide #-number column on mobile */
-  .tbl td:first-child{display:none}
-  /* make action buttons row */
   .tbl td:last-child{margin-top:4px}
-  /* month grid column also hidden (already hide-mobile) */
+}
+
+/* ─── Extra mobile polish ─── */
+@media(max-width:860px){
+  /* page title smaller on mobile */
+  .page-title{font-size:20px}
+  /* hero card padding tighter */
+  .hero{padding:20px 18px}
+  /* card padding tighter */
+  .card-pad{padding:16px}
+  /* copy field font size */
+  .copy-field{padding:10px 12px}
+  /* lrow padding */
+  .lrow{padding:12px 2px}
+  /* section title */
+  .section-title{font-size:15px}
+  /* topbar stacks on mobile */
+  .topbar{flex-direction:column;align-items:flex-start;gap:10px;margin-bottom:16px}
+  /* toast above bottom nav */
+  .toast{bottom:80px;font-size:13px}
 }
 </style>
 </head>

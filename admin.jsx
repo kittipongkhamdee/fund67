@@ -73,7 +73,7 @@ function AdminDashboard() {
         })}
       </div>
 
-      <div className="grid mt16" style={{ gridTemplateColumns: "1.15fr .85fr" }}>
+      <div className="grid-halves-chart mt16">
         {/* collection chart */}
         <div className="card card-pad reveal grid-2" style={{ animationDelay: ".1s" }}>
           <div className="row between">
@@ -111,7 +111,7 @@ function AdminDashboard() {
       </div>
 
       {/* accounts + ledger */}
-      <div className="grid mt16" style={{ gridTemplateColumns: "1fr 1fr" }}>
+      <div className="grid-halves mt16">
         <div className="card card-pad reveal grid-2" style={{ animationDelay: ".2s" }}>
           <div className="section-title" style={{ marginBottom: 14 }}>บัญชีกองทุน</div>
           <div style={{ display: "grid", gap: 12 }}>
