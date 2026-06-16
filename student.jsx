@@ -46,8 +46,16 @@ function AIVerify({ onConfirm, onBack }) {
     setPhase("uploading");
     try {
       const slipUrl = await API.uploadSlipToStorage(file);
+      const studentId = FM.me?.id;
       const monthPeriodId = FM.months[FM.currentMonthIndex]?.id;
-      await API.createPendingPayment(FM.me?.id, monthPeriodId, FM.MONTHLY_FEE, slipUrl);
+      // Check if payment already exists — update slip instead of creating duplicate
+      const existing = await API.fetchPayments(studentId);
+      const prev = existing.find((p) => p.month_period_id === monthPeriodId);
+      if (prev) {
+        await API.uploadSlip(prev.id, slipUrl, null);
+      } else {
+        await API.createPendingPayment(studentId, monthPeriodId, FM.MONTHLY_FEE, slipUrl);
+      }
       setPhase("done");
     } catch (e) {
       setErrMsg(e.message || "อัปโหลดไม่สำเร็จ");
