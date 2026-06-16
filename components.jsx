@@ -37,6 +37,7 @@ const ICONS = {
   sheet: "M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z M4 10h16 M4 15h16 M10 5v14 M16 5v14",
   external: "M14 4h6v6 M20 4l-8 8 M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5",
   logout: "M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4 M16 17l5-5-5-5 M21 12H9",
+  chevronRight: "M9 18l6-6-6-6",
   refresh: "M20 11A8 8 0 0 0 6.3 6.3L3 9 M3 4v5h5 M4 13a8 8 0 0 0 13.7 4.7L21 15 M21 20v-5h-5",
   upload: "M12 16V4 M7 9l5-5 5 5 M5 20h14",
   trend: "M3 17l6-6 4 4 8-8 M21 7v5h-5",

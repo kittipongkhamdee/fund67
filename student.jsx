@@ -122,10 +122,12 @@ function AIVerify({ onConfirm, onBack }) {
 
 /* ---------- Pay flow sheet ---------- */
 function PayFlow({ open, onClose, onPaid }) {
-  const [step, setStep] = useState("qr");
+  const [step, setStep] = useState("method"); // method | qr | verify | cash-done
+  const [cashLoading, setCashLoading] = useState(false);
+  const [cashErr, setCashErr] = useState("");
   const qrRef = useRef(null);
   const acc = FM.accounts?.[0] || {};
-  useEffect(() => { if (open) setStep("qr"); }, [open]);
+  useEffect(() => { if (open) { setStep("method"); setCashErr(""); } }, [open]);
 
   const downloadQR = () => {
     const canvas = qrRef.current?.querySelector("canvas");
@@ -144,19 +146,76 @@ function PayFlow({ open, onClose, onPaid }) {
     a.click();
   };
 
+  const handleCashSubmit = async () => {
+    setCashLoading(true); setCashErr("");
+    try {
+      const monthPeriodId = FM.months[FM.currentMonthIndex]?.id;
+      await API.createPendingPayment(FM.me?.id, monthPeriodId, FM.MONTHLY_FEE, null);
+      setStep("cash-done");
+    } catch (e) {
+      setCashErr(e.message || "บันทึกไม่สำเร็จ");
+    } finally {
+      setCashLoading(false);
+    }
+  };
+
+  const titleMap = { method: "ชำระค่ากองทุนเดือน" + FM.thisMonth.full, qr: "โอนผ่านพร้อมเพย์ / บัญชี", verify: "อัปโหลดสลิป", "cash-done": "บันทึกสำเร็จ" };
+
   return (
     <>
-      <Sheet open={open} onClose={onClose} title={step === "qr" ? "ชำระค่ากองทุนเดือน" + FM.thisMonth.full : "ตรวจสอบสลิป"} maxW={470}>
-        {step === "qr" ? (
+      <Sheet open={open} onClose={onClose} title={titleMap[step] || ""} maxW={470}>
+
+        {/* ── Step 1: เลือกวิธีชำระ ── */}
+        {step === "method" && (
           <div>
-            <div className="row between" style={{ marginBottom: 14 }}>
+            <div className="row between" style={{ marginBottom: 18 }}>
               <div>
                 <div className="muted" style={{ fontSize: 12.5, fontWeight: 600 }}>ยอดที่ต้องชำระ</div>
                 <div className="num" style={{ fontSize: 30, fontWeight: 700, letterSpacing: "-.02em" }}>{FM.fmt(FM.MONTHLY_FEE)}</div>
               </div>
               <Badge status="unpaid" />
             </div>
+            <div style={{ display: "grid", gap: 12 }}>
+              <button onClick={() => setStep("qr")} style={{
+                display: "flex", alignItems: "center", gap: 16, padding: "18px 20px",
+                background: "var(--brand-tint)", border: "2px solid var(--brand)", borderRadius: 16,
+                cursor: "pointer", textAlign: "left", width: "100%",
+              }}>
+                <span style={{ width: 44, height: 44, borderRadius: 12, background: "var(--brand)", color: "#fff", display: "grid", placeItems: "center", flexShrink: 0 }}>
+                  <Icon name="qr" size={22} stroke={2} />
+                </span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: "var(--brand)" }}>โอนจ่าย</div>
+                  <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>สแกน QR · โอนผ่านบัญชี · แนบสลิป</div>
+                </div>
+                <Icon name="chevronRight" size={18} style={{ marginLeft: "auto", color: "var(--brand)" }} />
+              </button>
 
+              <button onClick={handleCashSubmit} disabled={cashLoading} style={{
+                display: "flex", alignItems: "center", gap: 16, padding: "18px 20px",
+                background: "var(--ok-bg)", border: "2px solid var(--ok)", borderRadius: 16,
+                cursor: "pointer", textAlign: "left", width: "100%",
+                opacity: cashLoading ? .6 : 1,
+              }}>
+                <span style={{ width: 44, height: 44, borderRadius: 12, background: "var(--ok)", color: "#fff", display: "grid", placeItems: "center", flexShrink: 0 }}>
+                  <Icon name="wallet" size={22} stroke={2} />
+                </span>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: "var(--ok)" }}>เงินสด</div>
+                  <div className="muted" style={{ fontSize: 12.5, marginTop: 2 }}>แจ้งชำระด้วยเงินสด · รอเหรัญญิกยืนยัน</div>
+                </div>
+                {cashLoading
+                  ? <Icon name="refresh" size={18} style={{ marginLeft: "auto", color: "var(--ok)", animation: "spin 1s linear infinite" }} />
+                  : <Icon name="chevronRight" size={18} style={{ marginLeft: "auto", color: "var(--ok)" }} />}
+              </button>
+            </div>
+            {cashErr && <div className="login-error mt12"><Icon name="alert" size={15} stroke={2.4} />{cashErr}</div>}
+          </div>
+        )}
+
+        {/* ── Step 2: QR + account ── */}
+        {step === "qr" && (
+          <div>
             {/* QR — แสดงเฉพาะเมื่อมีหมายเลขพร้อมเพย์ */}
             {acc.promptpay ? (
               <>
@@ -168,31 +227,25 @@ function PayFlow({ open, onClose, onPaid }) {
                   <div style={{ display: "inline-block", padding: 12, background: "#fff", borderRadius: 18, boxShadow: "var(--sh-md)" }} ref={qrRef}>
                     <QRCode text={makePromptPayPayload(acc.promptpay, FM.MONTHLY_FEE)} size={172} />
                   </div>
-                  <div className="muted" style={{ fontSize: 12, marginTop: 12, fontWeight: 600 }}>
-                    {acc.holder}
-                  </div>
+                  <div className="muted" style={{ fontSize: 12, marginTop: 12, fontWeight: 600 }}>{acc.holder}</div>
                 </div>
-
                 <div className="mt16" style={{ display: "grid", gap: 12 }}>
                   {acc.number && <CopyField label={"เลขบัญชี · " + (acc.bankName || "บัญชีกองทุน")} value={acc.number} icon="bank" />}
                   <CopyField label="พร้อมเพย์" value={acc.promptpay} icon="qr" />
                 </div>
-
                 <button className="btn btn-primary mt16" style={{ width: "100%" }} onClick={downloadQR}>
                   <Icon name="download" size={18} stroke={2.2} /> บันทึก QR พร้อมเพย์
                 </button>
               </>
+            ) : acc.number ? (
+              <div className="mt16" style={{ display: "grid", gap: 12 }}>
+                <CopyField label={"เลขบัญชี · " + (acc.bankName || "บัญชีกองทุน")} value={acc.number} icon="bank" />
+              </div>
             ) : (
-              acc.number ? (
-                <div className="mt16" style={{ display: "grid", gap: 12 }}>
-                  <CopyField label={"เลขบัญชี · " + (acc.bankName || "บัญชีกองทุน")} value={acc.number} icon="bank" />
-                </div>
-              ) : (
-                <div className="card" style={{ padding: 24, textAlign: "center" }}>
-                  <Icon name="bank" size={32} style={{ color: "var(--mut)", marginBottom: 10 }} />
-                  <div className="muted" style={{ fontSize: 13 }}>ยังไม่ได้ตั้งค่าบัญชีรับเงิน<br/>กรุณาติดต่อเหรัญญิก</div>
-                </div>
-              )
+              <div className="card" style={{ padding: 24, textAlign: "center" }}>
+                <Icon name="bank" size={32} style={{ color: "var(--mut)", marginBottom: 10 }} />
+                <div className="muted" style={{ fontSize: 13 }}>ยังไม่ได้ตั้งค่าบัญชีรับเงิน<br/>กรุณาติดต่อเหรัญญิก</div>
+              </div>
             )}
 
             <div className="row gap12 mt16" style={{ alignItems: "center" }}>
@@ -202,12 +255,33 @@ function PayFlow({ open, onClose, onPaid }) {
             </div>
             <button className="btn btn-ghost mt12" style={{ width: "100%", borderStyle: "dashed", borderColor: "var(--brand)", color: "var(--brand)" }}
               onClick={() => setStep("verify")}>
-              <Icon name="upload" size={18} stroke={2.2} /> อัปโหลดสลิป · ให้ AI ตรวจสอบ
+              <Icon name="upload" size={18} stroke={2.2} /> อัปโหลดสลิป
+            </button>
+            <button className="btn btn-ghost mt8" style={{ width: "100%", fontSize: 13 }} onClick={() => setStep("method")}>
+              ← กลับ
             </button>
           </div>
-        ) : (
+        )}
+
+        {/* ── Step 3: อัปโหลดสลิป ── */}
+        {step === "verify" && (
           <AIVerify onBack={() => setStep("qr")} onConfirm={() => { onPaid(); onClose(); }} />
         )}
+
+        {/* ── Step 4: เงินสดสำเร็จ ── */}
+        {step === "cash-done" && (
+          <div style={{ textAlign: "center", padding: "28px 0" }}>
+            <span style={{ width: 56, height: 56, borderRadius: 16, background: "var(--ok-bg)", color: "var(--ok)", display: "grid", placeItems: "center", margin: "0 auto 14px" }}>
+              <Icon name="checkCircle" size={28} stroke={2.2} />
+            </span>
+            <div style={{ fontWeight: 700, fontSize: 16 }}>แจ้งชำระเงินสดแล้ว</div>
+            <div className="muted" style={{ fontSize: 13, marginTop: 6 }}>เหรัญญิกจะยืนยันการชำระเงินของคุณ</div>
+            <button className="btn btn-primary mt16" style={{ width: "100%" }} onClick={() => { onPaid(); onClose(); }}>
+              <Icon name="check" size={16} /> เสร็จสิ้น
+            </button>
+          </div>
+        )}
+
       </Sheet>
     </>
   );
