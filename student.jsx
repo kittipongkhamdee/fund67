@@ -358,10 +358,11 @@ function FundExpenses() {
 
 /* ---------- Student Home ---------- */
 function StudentHome({ paid, onPay, student = FM.me }) {
-  const me = student;
-  const paidCount = me.pays.filter((p, i) => p === "paid").length;
+  const me = student || FM.me || { name: "นักศึกษา", id: "", avatarHue: 220, pays: [] };
+  const pays = me.pays || [];
+  const paidCount = pays.filter((p) => p === "paid").length;
   const dueCount = FM.months.length;
-  const thisStatus = paid ? "paid" : me.pays[FM.currentMonthIndex];
+  const thisStatus = paid ? "paid" : (pays[FM.currentMonthIndex] || "unpaid");
   const totalPaid = paidCount * FM.MONTHLY_FEE;
 
   return (
@@ -372,7 +373,7 @@ function StudentHome({ paid, onPay, student = FM.me }) {
         <div style={{ position: "relative" }}>
           <div className="row between" style={{ alignItems: "flex-start" }}>
             <div>
-              <div style={{ fontSize: 13.5, opacity: .85, fontWeight: 500 }}>สวัสดี, {me.name.split(" ")[0]} 👋</div>
+              <div style={{ fontSize: 13.5, opacity: .85, fontWeight: 500 }}>สวัสดี, {(me.name || "").split(" ")[0]} 👋</div>
               <div style={{ fontSize: 20, fontWeight: 700, marginTop: 2 }}>{FM.SYSTEM_NAME}</div>
             </div>
             <span className="num" style={{ fontSize: 12.5, fontWeight: 600, opacity: .9, background: "rgba(255,255,255,.16)", padding: "6px 11px", borderRadius: 20 }}>
@@ -423,9 +424,10 @@ function StudentHome({ paid, onPay, student = FM.me }) {
         <div className="muted" style={{ fontSize: 12.5, marginBottom: 14 }}>ปีการศึกษา 2569</div>
         <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(48px,1fr))", gap: 10 }}>
           {FM.months.map((m, i) => {
-            const st = i === FM.currentMonthIndex ? thisStatus : me.pays[i];
+            const st = i === FM.currentMonthIndex ? thisStatus : (pays[i] || (i > FM.currentMonthIndex ? "future" : "unpaid"));
             const c = { paid: ["var(--ok-bg)", "var(--ok)"], unpaid: ["var(--bad-bg)", "var(--bad)"],
-              pending: ["var(--warn-bg)", "var(--warn)"], future: ["var(--mut-bg)", "var(--mut)"] }[st];
+              pending: ["var(--warn-bg)", "var(--warn)"], future: ["var(--mut-bg)", "var(--mut)"] }[st]
+              || ["var(--mut-bg)", "var(--mut)"];
             return (
               <div key={m.key} style={{ textAlign: "center", background: c[0], borderRadius: 13, padding: "12px 4px" }}>
                 <div style={{ fontSize: 12, fontWeight: 600, color: c[1] }}>{m.short}</div>
