@@ -8,13 +8,21 @@ async function initializeFromSupabase() {
     const MONTHLY_FEE = 100;
 
     // Fetch all required data from Supabase
-    const [students, months, accounts, ledger, queue] = await Promise.all([
+    const [students, rawMonths, accounts, ledger, queue] = await Promise.all([
       API.fetchStudents(),
       API.fetchMonthPeriods(),
       API.fetchAccounts(),
       API.fetchLedger(null, 50),
       API.fetchVerificationQueue(),
     ]);
+
+    // Normalize month field names (Supabase → app shorthand)
+    const months = rawMonths.map((m) => ({
+      ...m,
+      short: m.month_short,
+      full: m.month_full,
+      key: m.month_key,
+    }));
 
     // Find current month (latest month or default to index 7 = ม.ค.)
     const currentMonthIndex = Math.min(7, months.length - 1);
