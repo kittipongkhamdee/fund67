@@ -15,7 +15,7 @@ function ExportView() {
   const cm = FM.countFor(mi);
   const fileName = mode === "month"
     ? "สรุปกองทุน-" + FM.months[mi].full.replace(" ", "")
-    : "สรุปกองทุน-ปีการศึกษา2568";
+    : "สรุปกองทุน-ปีการศึกษา2569";
 
   const exportPNG = async () => {
     setBusy("png");
@@ -133,7 +133,7 @@ function ExportView() {
                 <span style={{ fontWeight: 700, fontSize: 18 }}>กองทุนรุ่น 67 · ห้อง IT-A</span>
               </div>
               <div style={{ fontSize: 19, fontWeight: 700, marginTop: 14, letterSpacing: "-.01em" }}>
-                {mode === "month" ? "สรุปการชำระรายเดือน · " + FM.months[mi].full : "สรุปการชำระประจำปีการศึกษา 2568"}
+                {mode === "month" ? "สรุปการชำระรายเดือน · " + FM.months[mi].full : "สรุปการชำระประจำปีการศึกษา 2569"}
               </div>
             </div>
             <div style={{ textAlign: "right", fontSize: 11.5, color: "#8A8C93", fontWeight: 600 }}>

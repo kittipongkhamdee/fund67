@@ -85,7 +85,7 @@ function AdminDashboard() {
           <div className="row between">
             <div>
               <div className="section-title">ยอดเก็บรายเดือน</div>
-              <div className="muted" style={{ fontSize: 12.5 }}>ปีการศึกษา 2568 · {FM.fmt(FM.MONTHLY_FEE)}/คน/เดือน</div>
+              <div className="muted" style={{ fontSize: 12.5 }}>ปีการศึกษา 2569 · {FM.fmt(FM.MONTHLY_FEE)}/คน/เดือน</div>
             </div>
             <span className="badge" style={{ background: "var(--brand-bg)", color: "var(--brand)" }}>
               <Icon name="trend" size={14} stroke={2.4} /> {FM.fmt(cm.paid * FM.MONTHLY_FEE)} เดือนนี้

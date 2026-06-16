@@ -4,7 +4,7 @@
 
 async function initializeFromSupabase() {
   try {
-    const ACADEMIC_YEAR_ID = "2568"; // ปีการศึกษา 2568
+    const ACADEMIC_YEAR_ID = "2569"; // ปีการศึกษา 2569
     const MONTHLY_FEE = 100;
 
     // Fetch all required data from Supabase
