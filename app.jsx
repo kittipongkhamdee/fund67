@@ -119,6 +119,7 @@ function App() {
   const [toast, setToast] = useState("");
   const [changePw, setChangePw] = useState(false);
   const [fmVer, setFmVer] = useState(0);
+  const [adminName, setAdminName] = useState(FM.settings?.admin_name || "ผู้ดูแลระบบ");
 
   // Called after any action that changes DB data so FM re-fetches
   const refreshFM = async () => {
@@ -148,7 +149,6 @@ function App() {
   const { role, student } = auth;
   const items = getNav(role);
   const [title, sub] = TITLES[tab] || ["", ""];
-  const [adminName, setAdminName] = useState(FM.settings?.admin_name || "ผู้ดูแลระบบ");
   const me = role === "admin"
     ? { name: adminName, id: FM.settings?.admin_id || "ADMIN", avatarHue: 220, pays: [] }
     : (student || FM.me || { name: "ผู้ดูแลระบบ", id: "ADMIN", avatarHue: 220, pays: [] });
