@@ -38,7 +38,7 @@ function AdminDashboard() {
     : (() => { const a = FM.accounts.find((x) => x.id === acc); return { received: a.received, withdrawn: a.withdrawn, balance: a.balance, available: a.balance, reserved: 0 }; })();
 
   const cm = FM.countFor(FM.currentMonthIndex);
-  const paidPct = cm.paid / cm.total;
+  const paidPct = cm.total > 0 ? cm.paid / cm.total : 0;
 
   const stats = [
     { label: "ยอดเงินทั้งหมด", val: view.received, ic: "trend", bg: "var(--brand-bg)", fg: "var(--brand)", glow: "#0B5FFF", foot: "รับเข้าสะสมทุกบัญชี" },
