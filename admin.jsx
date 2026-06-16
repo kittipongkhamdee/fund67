@@ -163,7 +163,7 @@ function AdminDashboard() {
                   </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{tx.title}</div>
-                    <div className="muted" style={{ fontSize: 11.5 }}>{typeLabel} · {dateStr} เวลา {timeStr}{tx.description ? " · " + tx.description : ""}</div>
+                    <div className="muted" style={{ fontSize: 11.5 }}>{typeLabel} · {dateStr} เวลา {timeStr}</div>
                   </div>
                   <div className="num" style={{ fontWeight: 700, fontSize: 14, color: isIn ? "var(--ok)" : "var(--bad)" }}>
                     {isIn ? "+" : "-"}{FM.fmt(tx.amount)}
