@@ -26,7 +26,7 @@ function CopyField({ label, value, icon }) {
 
 
 /* ---------- Slip upload ---------- */
-function AIVerify({ onConfirm, onBack, studentId }) {
+function AIVerify({ onConfirm, onBack, studentId, monthIdx }) {
   const [phase, setPhase] = useState("pick"); // pick | uploading | done | error
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState(null);
@@ -47,7 +47,8 @@ function AIVerify({ onConfirm, onBack, studentId }) {
     try {
       const slipUrl = await API.uploadSlipToStorage(file);
       const sid = studentId || localStorage.getItem("loggedInStudentId") || FM.me?.id;
-      const monthPeriodId = FM.months[FM.currentMonthIndex]?.id;
+      const targetIdx = (monthIdx !== undefined && monthIdx !== null) ? monthIdx : FM.currentMonthIndex;
+      const monthPeriodId = FM.months[targetIdx]?.id;
       // Check if payment already exists — update slip instead of creating duplicate
       const existing = await API.fetchPayments(sid);
       const prev = existing.find((p) => p.month_period_id === monthPeriodId);
@@ -129,13 +130,35 @@ function AIVerify({ onConfirm, onBack, studentId }) {
 
 
 /* ---------- Pay flow sheet ---------- */
-function PayFlow({ open, onClose, onPaid, studentId }) {
-  const [step, setStep] = useState("method"); // method | qr | verify | cash-done
+function PayFlow({ open, onClose, onPaid, studentId, studentPays }) {
+  const [step, setStep] = useState("pick-month"); // pick-month | method | qr | verify | cash-done
+  const [selMonthIdx, setSelMonthIdx] = useState(FM.currentMonthIndex);
   const [cashLoading, setCashLoading] = useState(false);
   const [cashErr, setCashErr] = useState("");
   const qrRef = useRef(null);
   const acc = FM.accounts?.[0] || {};
-  useEffect(() => { if (open) { setStep("method"); setCashErr(""); } }, [open]);
+
+  const pays = studentPays || [];
+  // Months that are unpaid, rejected, or current — available to pay
+  const payableMonths = FM.months
+    .map((m, i) => ({ ...m, i }))
+    .filter(({ i }) => {
+      if (i > FM.currentMonthIndex) return false;
+      const st = pays[i] || "unpaid";
+      return st === "unpaid" || st === "rejected";
+    });
+
+  const selectedMonth = FM.months[selMonthIdx];
+
+  useEffect(() => {
+    if (open) {
+      setStep("pick-month");
+      setCashErr("");
+      // default to first unpayable month, or current
+      const first = payableMonths[0];
+      setSelMonthIdx(first ? first.i : FM.currentMonthIndex);
+    }
+  }, [open]);
 
   const downloadQR = () => {
     const canvas = qrRef.current?.querySelector("canvas");
@@ -157,9 +180,8 @@ function PayFlow({ open, onClose, onPaid, studentId }) {
   const handleCashSubmit = async () => {
     setCashLoading(true); setCashErr("");
     try {
-      const monthPeriodId = FM.months[FM.currentMonthIndex]?.id;
+      const monthPeriodId = FM.months[selMonthIdx]?.id;
       const sid = studentId || localStorage.getItem("loggedInStudentId") || FM.me?.id;
-      // Check if payment already exists for this month
       const existing = await API.fetchPayments(sid);
       const alreadyExists = existing.find((p) => p.month_period_id === monthPeriodId);
       if (alreadyExists) {
@@ -185,11 +207,64 @@ function PayFlow({ open, onClose, onPaid, studentId }) {
     }
   };
 
-  const titleMap = { method: "ชำระค่ากองทุนเดือน" + FM.thisMonth.full, qr: "โอนผ่านพร้อมเพย์ / บัญชี", verify: "อัปโหลดสลิป", "cash-done": "บันทึกสำเร็จ" };
+  const titleMap = {
+    "pick-month": "เลือกเดือนที่ต้องการชำระ",
+    method: "ชำระค่ากองทุน · " + (selectedMonth?.full || ""),
+    qr: "โอนผ่านพร้อมเพย์ / บัญชี",
+    verify: "อัปโหลดสลิป",
+    "cash-done": "บันทึกสำเร็จ",
+  };
 
   return (
     <>
       <Sheet open={open} onClose={onClose} title={titleMap[step] || ""} maxW={470}>
+
+        {/* ── Step 0: เลือกเดือน ── */}
+        {step === "pick-month" && (
+          <div>
+            {payableMonths.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <Icon name="checkCircle" size={40} style={{ color: "var(--ok)", marginBottom: 12 }} />
+                <div style={{ fontWeight: 700, fontSize: 15 }}>ชำระครบทุกเดือนแล้ว!</div>
+                <div className="muted" style={{ fontSize: 13, marginTop: 6 }}>ไม่มีเดือนที่ค้างชำระ</div>
+              </div>
+            ) : (
+              <>
+                <div className="muted" style={{ fontSize: 12.5, fontWeight: 600, marginBottom: 12 }}>เดือนที่ค้างชำระ ({payableMonths.length} เดือน)</div>
+                <div style={{ display: "grid", gap: 8, marginBottom: 20 }}>
+                  {payableMonths.map(({ i, full, short }) => {
+                    const st = pays[i] || "unpaid";
+                    const isSelected = selMonthIdx === i;
+                    return (
+                      <button key={i} onClick={() => setSelMonthIdx(i)} style={{
+                        display: "flex", alignItems: "center", gap: 14, padding: "14px 16px",
+                        background: isSelected ? "var(--brand-tint)" : "var(--bg2)",
+                        border: isSelected ? "2px solid var(--brand)" : "2px solid transparent",
+                        borderRadius: 14, cursor: "pointer", textAlign: "left", width: "100%",
+                        transition: "all .15s",
+                      }}>
+                        <div style={{ width: 38, height: 38, borderRadius: 10, background: isSelected ? "var(--brand)" : "var(--line2)", color: isSelected ? "#fff" : "var(--txt)", display: "grid", placeItems: "center", flexShrink: 0, fontFamily: "var(--num)", fontWeight: 700, fontSize: 12 }}>
+                          {short}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, fontSize: 14, color: isSelected ? "var(--brand)" : "var(--txt)" }}>{full}</div>
+                          <div className="muted" style={{ fontSize: 12, marginTop: 1 }}>{FM.fmt(FM.MONTHLY_FEE)}</div>
+                        </div>
+                        {st === "rejected"
+                          ? <span className="badge" style={{ background: "var(--bad-bg)", color: "var(--bad)", flexShrink: 0 }}>ถูกปฏิเสธ</span>
+                          : <span className="badge" style={{ background: "var(--bad-bg)", color: "var(--bad)", flexShrink: 0 }}>ค้างจ่าย</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+                <button className="btn btn-primary" style={{ width: "100%", height: 50 }}
+                  onClick={() => setStep("method")}>
+                  <Icon name="wallet" size={18} stroke={2.2} /> ชำระเดือน {selectedMonth?.full}
+                </button>
+              </>
+            )}
+          </div>
+        )}
 
         {/* ── Step 1: เลือกวิธีชำระ ── */}
         {step === "method" && (
@@ -236,6 +311,9 @@ function PayFlow({ open, onClose, onPaid, studentId }) {
               </button>
             </div>
             {cashErr && <div className="login-error mt12"><Icon name="alert" size={15} stroke={2.4} />{cashErr}</div>}
+            <button className="btn btn-ghost mt8" style={{ width: "100%", fontSize: 13 }} onClick={() => setStep("pick-month")}>
+              ← เปลี่ยนเดือน
+            </button>
           </div>
         )}
 
@@ -291,7 +369,7 @@ function PayFlow({ open, onClose, onPaid, studentId }) {
 
         {/* ── Step 3: อัปโหลดสลิป ── */}
         {step === "verify" && (
-          <AIVerify onBack={() => setStep("qr")} onConfirm={() => { onPaid(); onClose(); }} studentId={studentId} />
+          <AIVerify onBack={() => setStep("qr")} onConfirm={() => { onPaid(); onClose(); }} studentId={studentId} monthIdx={selMonthIdx} />
         )}
 
         {/* ── Step 4: เงินสดสำเร็จ ── */}
