@@ -27,9 +27,13 @@ async function initializeFromSupabase() {
       key: m.month_key,
     }));
 
-    // Find current month: prefer is_current flag, else default to index 7 (ม.ค.)
-    const currentFlagIdx = months.findIndex((m) => m.is_current);
-    const currentMonthIndex = currentFlagIdx >= 0 ? currentFlagIdx : Math.min(7, months.length - 1);
+    // Find current month automatically from today's date (Thai year = Gregorian + 543)
+    const _now = new Date();
+    const _thaiYY = String(_now.getFullYear() + 543).slice(-2);
+    const _mm = String(_now.getMonth() + 1).padStart(2, "0");
+    const todayKey = `${_mm}-${_thaiYY}`; // e.g. "06-69"
+    const autoIdx = months.findIndex((m) => m.month_key === todayKey);
+    const currentMonthIndex = autoIdx >= 0 ? autoIdx : months.findIndex((m) => m.is_current >= 0) ?? Math.min(7, months.length - 1);
     const thisMonth = months[currentMonthIndex] || { short: "-", full: "-", key: "-", month_short: "-", month_full: "-", month_key: "-" };
 
     // Helper to build payment status array for a student
