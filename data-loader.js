@@ -132,7 +132,7 @@ async function initializeFromSupabase() {
     }
 
     console.log("✓ FM initialized from Supabase", window.FM);
-    if (window.__startApp) window.__startApp();
+    if (window.__startApp) window.__startApp(); // guarded — only fires once
     return window.FM;
   } catch (error) {
     console.error("Failed to initialize FM from Supabase:", error);

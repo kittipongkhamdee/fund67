@@ -92,6 +92,13 @@ function App() {
   const [paid, setPaid] = useState(false);
   const [toast, setToast] = useState("");
   const [changePw, setChangePw] = useState(false);
+  const [fmVer, setFmVer] = useState(0);
+
+  // Called after any action that changes DB data so FM re-fetches
+  const refreshFM = async () => {
+    try { await initializeFromSupabase(); setFmVer((v) => v + 1); } catch (e) { console.error(e); }
+  };
+  window.__refreshFM = refreshFM;
 
   const getNav = (role) => role === "admin"
     ? NAV_ADMIN_KEYS.map((n) => n.k === "verify" ? { ...n, badge: FM.queue.length } : n)
@@ -219,7 +226,7 @@ function App() {
             </div>
           </div>
 
-          <div key={role + tab} className="fade-swap">
+          <div key={role + tab + fmVer} className="fade-swap">
             <Page />
           </div>
         </div>

@@ -296,6 +296,8 @@ function AdminVerify() {
       setItems((x) => x.filter((q) => q.id !== id));
       setToast(confirmed ? "ยืนยันการชำระแล้ว" : "ปฏิเสธสลิปแล้ว");
       setTimeout(() => setToast(""), 1800);
+      // Refresh FM so Dashboard/People reflect the new status
+      window.__refreshFM?.();
     } catch (e) {
       setToast("เกิดข้อผิดพลาด: " + e.message);
       setTimeout(() => setToast(""), 2500);
