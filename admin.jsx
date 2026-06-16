@@ -521,18 +521,21 @@ function AdminStudents() {
                 {students.map((s) => (
                   <tr key={s.id}>
                     <td><span className="sid">{s.id}</span></td>
-                    <td style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <Avatar name={s.name} hue={s.avatarHue || 220} size={32} />
-                      <div>{s.name}</div>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <Avatar name={s.name} hue={s.avatarHue || 220} size={32} />
+                        <span>{s.name}</span>
+                      </div>
                     </td>
-
-                    <td style={{ textAlign: "right", display: "flex", gap: 6, justifyContent: "flex-end" }}>
-                      <button className="icon-btn" onClick={() => handleEditClick(s)} disabled={loading} title="แก้ไข">
-                        <Icon name="pen" size={16} />
-                      </button>
-                      <button className="icon-btn" onClick={() => handleDelete(s.id)} disabled={loading} title="ลบ" style={{ color: "var(--bad)" }}>
-                        <Icon name="trash" size={16} />
-                      </button>
+                    <td>
+                      <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                        <button className="btn btn-ghost btn-sm" onClick={() => handleEditClick(s)} disabled={loading} title="แก้ไข" style={{ padding: "6px 10px" }}>
+                          <Icon name="pen" size={15} /> แก้ไข
+                        </button>
+                        <button className="btn btn-ghost btn-sm" onClick={() => handleDelete(s.id)} disabled={loading} title="ลบ" style={{ padding: "6px 10px", color: "var(--bad)", borderColor: "var(--bad-bg)" }}>
+                          <Icon name="trash" size={15} /> ลบ
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
