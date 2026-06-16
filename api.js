@@ -110,6 +110,24 @@ const API = {
   },
 
   // --- Slips & Verification Queue ---
+  async uploadSlipToStorage(file) {
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const path = `${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+    const { data, error } = await supabase.storage.from("slips").upload(path, file, { upsert: false });
+    if (error) throw error;
+    const { data: urlData } = supabase.storage.from("slips").getPublicUrl(data.path);
+    return urlData.publicUrl;
+  },
+
+  async createPendingPayment(studentId, monthPeriodId, amount, slipUrl) {
+    const { data, error } = await supabase
+      .from("payments")
+      .insert([{ student_id: studentId, month_period_id: monthPeriodId, amount, status: "pending", slip_image_url: slipUrl, created_at: new Date().toISOString() }])
+      .select();
+    if (error) throw error;
+    return data[0];
+  },
+
   async uploadSlip(paymentId, imageUrl, aiResult) {
     const { data, error } = await supabase
       .from("payments")

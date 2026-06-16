@@ -268,28 +268,66 @@ function AdminPeople() {
   );
 }
 
-/* ---------- AI verification queue ---------- */
+/* ---------- Verification queue (manual review) ---------- */
 function AdminVerify() {
-  const [items, setItems] = useState(FM.queue);
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState("");
-  const act = (id, kind) => {
-    setItems((x) => x.filter((q) => q.id !== id));
-    setToast(kind === "ok" ? "ยืนยันการชำระแล้ว" : "ปฏิเสธสลิปแล้ว");
-    setTimeout(() => setToast(""), 1800);
+  const [acting, setActing] = useState(null);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      const data = await API.fetchVerificationQueue();
+      setItems(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  useEffect(() => { load(); }, []);
+
+  const act = async (id, confirmed) => {
+    setActing(id);
+    try {
+      await API.confirmPayment(id, confirmed);
+      setItems((x) => x.filter((q) => q.id !== id));
+      setToast(confirmed ? "ยืนยันการชำระแล้ว" : "ปฏิเสธสลิปแล้ว");
+      setTimeout(() => setToast(""), 1800);
+    } catch (e) {
+      setToast("เกิดข้อผิดพลาด: " + e.message);
+      setTimeout(() => setToast(""), 2500);
+    } finally {
+      setActing(null);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="card card-pad" style={{ textAlign: "center", padding: 64 }}>
+        <Icon name="refresh" size={30} style={{ animation: "spin 1s linear infinite", color: "var(--mut)" }} />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="card card-pad reveal row between wrap gap12" style={{ marginBottom: 16, background: "var(--brand-tint)", borderColor: "#D8E5FF" }}>
         <div className="row gap12">
           <span style={{ width: 42, height: 42, borderRadius: 13, background: "var(--brand)", color: "#fff", display: "grid", placeItems: "center" }}>
-            <Icon name="spark2" size={22} fill="#fff" stroke={0} />
+            <Icon name="shield" size={22} stroke={2.2} />
           </span>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15 }}>AI ช่วยตรวจสลิปอัตโนมัติ</div>
-            <div className="muted" style={{ fontSize: 12.5 }}>อ่านยอด/วันที่/บัญชีปลายทาง ตรวจสลิปซ้ำ แล้วให้คุณยืนยันขั้นสุดท้าย</div>
+            <div style={{ fontWeight: 700, fontSize: 15 }}>ตรวจสลิปการโอนเงิน</div>
+            <div className="muted" style={{ fontSize: 12.5 }}>ตรวจสอบสลิปจากนักศึกษา แล้วยืนยันหรือปฏิเสธ</div>
           </div>
         </div>
-        <span className="badge" style={{ background: "#fff", color: "var(--brand)" }}>{items.length} รอตรวจ</span>
+        <div className="row gap8">
+          <span className="badge" style={{ background: "#fff", color: "var(--brand)" }}>{items.length} รอตรวจ</span>
+          <button className="btn btn-ghost btn-sm" onClick={load}><Icon name="refresh" size={14} /></button>
+        </div>
       </div>
 
       {items.length === 0 ? (
@@ -301,61 +339,43 @@ function AdminVerify() {
           <div className="muted" style={{ fontSize: 13.5 }}>ไม่มีสลิปค้างรอการตรวจสอบ</div>
         </div>
       ) : (
-        <div className="grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
+        <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: 16 }}>
           {items.map((it, idx) => {
-            const flagged = it.ai.status !== "match";
+            const studentName = it.students?.name || it.student_id;
+            const studentId = it.students?.id || "";
+            const monthName = it.month_periods?.month_full || "";
+            const uploadedAt = new Date(it.created_at).toLocaleString("th-TH", { dateStyle: "short", timeStyle: "short" });
+            const isActing = acting === it.id;
             return (
-              <div key={it.id} className="card reveal grid-2" style={{ animationDelay: idx * .06 + "s", overflow: "hidden" }}>
-                <div className="row gap12" style={{ padding: 16 }}>
-                  {/* slip thumb */}
-                  <div className="slip-ph" style={{ width: 70, height: 92, flexShrink: 0, padding: 9, position: "relative" }}>
-                    <div className="shimmer" style={{ height: 6, width: "70%", marginBottom: 6, animation: "none", background: "var(--line)" }} />
-                    <div style={{ height: 14, width: "80%", marginBottom: 8, background: "var(--line2)", borderRadius: 4 }} />
-                    <div style={{ height: 5, width: "60%", marginBottom: 4, background: "var(--line)", borderRadius: 4 }} />
-                    <div style={{ height: 5, width: "75%", background: "var(--line)", borderRadius: 4 }} />
-                    <span style={{ position: "absolute", bottom: 6, right: 6, color: it.ai.bank === "SCB" ? "#4E2A84" : "var(--mut)", fontSize: 9, fontWeight: 700 }}>{it.ai.bank}</span>
+              <div key={it.id} className="card reveal" style={{ animationDelay: idx * .06 + "s", overflow: "hidden" }}>
+                {it.slip_image_url ? (
+                  <a href={it.slip_image_url} target="_blank" rel="noreferrer" style={{ display: "block" }}>
+                    <img src={it.slip_image_url} alt="สลิป" style={{ width: "100%", maxHeight: 260, objectFit: "contain", display: "block", background: "#f5f5f5" }} />
+                  </a>
+                ) : (
+                  <div style={{ height: 120, background: "var(--bg2)", display: "grid", placeItems: "center" }}>
+                    <span className="muted" style={{ fontSize: 13 }}>ไม่มีรูปสลิป</span>
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="row between gap8">
-                      <span style={{ fontWeight: 700, fontSize: 14, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", flex: 1, minWidth: 0 }}>{it.student}</span>
-                      <Badge status={it.ai.status} size="sm" />
-                    </div>
-                    <div className="sid" style={{ marginTop: 2 }}>{it.sid}</div>
-                    <div className="muted" style={{ fontSize: 12, marginTop: 1 }}>ส่งเมื่อ {it.uploaded} · {it.month}</div>
-                    {/* AI confidence */}
-                    <div className="row gap8" style={{ marginTop: 9 }}>
-                      <div style={{ flex: 1, height: 6, background: "var(--bg2)", borderRadius: 20, overflow: "hidden" }}>
-                        <div style={{ width: (it.ai.confidence * 100) + "%", height: "100%",
-                          background: it.ai.confidence > .85 ? "var(--ok)" : it.ai.confidence > .6 ? "var(--warn)" : "var(--bad)",
-                          borderRadius: 20 }} />
-                      </div>
-                      <span className="num muted" style={{ fontSize: 11.5, fontWeight: 700 }}>{Math.round(it.ai.confidence * 100)}%</span>
-                    </div>
+                )}
+                <div style={{ padding: 16 }}>
+                  <div className="row between gap8" style={{ marginBottom: 2 }}>
+                    <span style={{ fontWeight: 700, fontSize: 15 }}>{studentName}</span>
+                    <span className="num muted" style={{ fontSize: 12 }}>{studentId}</span>
                   </div>
-                </div>
-
-                {/* extracted */}
-                <div style={{ padding: "0 16px 14px" }}>
-                  <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: 6, fontSize: 12.5 }}>
-                    {[["ยอดโอน", FM.fmt(it.ai.amount)], ["วันที่", it.ai.date], ["เวลา", it.ai.time], ["อ้างอิง", it.ai.ref]].map(([k, v]) => (
-                      <div key={k} className="row between" style={{ background: "var(--surface2)", padding: "7px 10px", borderRadius: 9 }}>
-                        <span className="muted" style={{ fontWeight: 600 }}>{k}</span>
-                        <span className="num" style={{ fontWeight: 600 }}>{v}</span>
-                      </div>
-                    ))}
+                  <div className="muted" style={{ fontSize: 12, marginBottom: 12 }}>เดือน {monthName} · ส่งเมื่อ {uploadedAt}</div>
+                  <div className="row between" style={{ padding: "8px 12px", background: "var(--surface2)", borderRadius: 10, marginBottom: 14 }}>
+                    <span className="muted" style={{ fontSize: 13, fontWeight: 600 }}>ยอดโอน</span>
+                    <span className="num" style={{ fontWeight: 700, fontSize: 15 }}>{FM.fmt(it.amount)}</span>
                   </div>
-                  {flagged && (
-                    <div className="row gap8" style={{ marginTop: 10, padding: "9px 11px", background: it.ai.status === "duplicate" ? "var(--bad-bg)" : "var(--warn-bg)", borderRadius: 10 }}>
-                      <Icon name="alert" size={15} stroke={2.4} style={{ color: it.ai.status === "duplicate" ? "var(--bad)" : "var(--warn)", flexShrink: 0, marginTop: 1 }} />
-                      <span style={{ fontSize: 12, fontWeight: 600, color: it.ai.status === "duplicate" ? "var(--bad)" : "var(--warn)" }}>{it.ai.note}</span>
-                    </div>
-                  )}
-                  <div className="row gap8" style={{ marginTop: 12 }}>
-                    <button className="btn btn-bad btn-sm" style={{ flex: 1 }} onClick={() => act(it.id, "no")}>
+                  <div className="row gap8">
+                    <button className="btn btn-bad btn-sm" style={{ flex: 1 }} disabled={isActing} onClick={() => act(it.id, false)}>
                       <Icon name="x" size={15} stroke={2.6} /> ปฏิเสธ
                     </button>
-                    <button className="btn btn-ok btn-sm" style={{ flex: 2 }} onClick={() => act(it.id, "ok")}>
-                      <Icon name="check" size={15} stroke={2.6} /> {flagged ? "ยืนยันด้วยตนเอง" : "ยืนยันการชำระ"}
+                    <button className="btn btn-ok btn-sm" style={{ flex: 2 }} disabled={isActing} onClick={() => act(it.id, true)}>
+                      {isActing
+                        ? <Icon name="refresh" size={15} style={{ animation: "spin 1s linear infinite" }} />
+                        : <Icon name="check" size={15} stroke={2.6} />}
+                      ยืนยันการชำระ
                     </button>
                   </div>
                 </div>

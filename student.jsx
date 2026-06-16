@@ -25,93 +25,100 @@ function CopyField({ label, value, icon }) {
 }
 
 
-/* ---------- AI slip verification ---------- */
+/* ---------- Slip upload ---------- */
 function AIVerify({ onConfirm, onBack }) {
-  const [phase, setPhase] = useState("scan"); // scan -> done
-  const fields = [
-    { k: "ยอดเงิน", v: FM.fmt(FM.MONTHLY_FEE), ok: true, ic: "wallet" },
-    { k: "วันที่ / เวลา", v: "13 ม.ค. 2569 · 08:59", ok: true, ic: "clock" },
-    { k: "ธนาคารต้นทาง", v: "ไทยพาณิชย์ (SCB)", ok: true, ic: "bank" },
-    { k: "บัญชีปลายทาง", v: "123-4-56789-0 ✓ บัญชีกองทุน", ok: true, ic: "shield" },
-    { k: "เลขอ้างอิง", v: "0151xxxx8821", ok: true, ic: "receipt" },
-  ];
-  useEffect(() => {
-    const t = setTimeout(() => setPhase("done"), 2300);
-    return () => clearTimeout(t);
-  }, []);
+  const [phase, setPhase] = useState("pick"); // pick | uploading | done | error
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
+  const [errMsg, setErrMsg] = useState("");
+  const fileRef = useRef(null);
+
+  const handleFile = (f) => {
+    if (!f) return;
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
+    setErrMsg("");
+    setPhase("pick");
+  };
+
+  const handleUpload = async () => {
+    if (!file) return;
+    setPhase("uploading");
+    try {
+      const slipUrl = await API.uploadSlipToStorage(file);
+      const monthPeriodId = FM.months[FM.currentMonthIndex]?.id;
+      await API.createPendingPayment(FM.me?.id, monthPeriodId, FM.MONTHLY_FEE, slipUrl);
+      setPhase("done");
+    } catch (e) {
+      setErrMsg(e.message || "อัปโหลดไม่สำเร็จ");
+      setPhase("error");
+    }
+  };
+
+  if (phase === "done") {
+    return (
+      <div style={{ textAlign: "center", padding: "28px 0" }}>
+        <span style={{ width: 56, height: 56, borderRadius: 16, background: "var(--ok-bg)", color: "var(--ok)", display: "grid", placeItems: "center", margin: "0 auto 14px" }}>
+          <Icon name="checkCircle" size={28} stroke={2.2} />
+        </span>
+        <div style={{ fontWeight: 700, fontSize: 16 }}>ส่งสลิปสำเร็จแล้ว!</div>
+        <div className="muted" style={{ fontSize: 13, marginTop: 6 }}>เหรัญญิกจะตรวจสอบและยืนยันการชำระเงินของคุณ</div>
+        <button className="btn btn-primary mt16" style={{ width: "100%" }} onClick={onConfirm}>
+          <Icon name="check" size={16} /> เสร็จสิ้น
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
-      <div className="row gap12" style={{ alignItems: "stretch" }}>
-        {/* slip preview */}
-        <div className="scan-frame slip-ph" style={{ width: 150, minHeight: 196, flexShrink: 0, position: "relative", padding: 14 }}>
-          <div className="shimmer" style={{ height: 10, width: "60%", marginBottom: 10 }} />
-          <div className="shimmer" style={{ height: 26, width: "85%", marginBottom: 12 }} />
-          <div className="shimmer" style={{ height: 8, width: "70%", marginBottom: 7 }} />
-          <div className="shimmer" style={{ height: 8, width: "55%", marginBottom: 7 }} />
-          <div className="shimmer" style={{ height: 8, width: "75%" }} />
-          <div style={{ position: "absolute", bottom: 14, left: 14, right: 14 }}>
-            <div className="shimmer" style={{ height: 30, width: 30, borderRadius: 50 }} />
-          </div>
-          {phase === "scan" && <div className="scan-line" />}
-          <div style={{ position: "absolute", top: 8, right: 8, background: "var(--ink)", color: "#fff",
-            fontSize: 9.5, fontWeight: 700, padding: "3px 7px", borderRadius: 20 }}>สลิปโอนเงิน</div>
-        </div>
-        {/* AI panel */}
-        <div className="card" style={{ flex: 1, padding: 16, background: "var(--brand-tint)", borderColor: "#D8E5FF" }}>
-          <div className="row gap8" style={{ marginBottom: 4 }}>
-            <span style={{ width: 26, height: 26, borderRadius: 8, background: "var(--brand)", color: "#fff", display: "grid", placeItems: "center" }}>
-              <Icon name="spark2" size={15} fill="#fff" stroke={0} />
-            </span>
-            <span style={{ fontWeight: 700, fontSize: 14 }}>AI ตรวจสอบสลิป</span>
-            {phase === "scan"
-              ? <span className="muted num" style={{ marginLeft: "auto", fontSize: 12, fontWeight: 600 }}>กำลังอ่าน…</span>
-              : <Badge status="match" size="sm" />}
-          </div>
-          {phase === "scan" ? (
-            <div style={{ paddingTop: 6 }}>
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="row gap8" style={{ padding: "9px 0" }}>
-                  <span className="shimmer" style={{ width: 18, height: 18, borderRadius: 50 }} />
-                  <span className="shimmer" style={{ height: 9, width: ["72%", "60%", "80%"][i] }} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ paddingTop: 2 }}>
-              {fields.map((f, i) => (
-                <div key={f.k} className="ai-row" style={{ animationDelay: i * 90 + "ms" }}>
-                  <span style={{ width: 20, height: 20, borderRadius: 50, background: "var(--ok-bg)", color: "var(--ok)", display: "grid", placeItems: "center" }}>
-                    <Icon name="check" size={13} stroke={3} />
-                  </span>
-                  <span className="muted" style={{ fontSize: 12.5, fontWeight: 600, width: 92 }}>{f.k}</span>
-                  <span className="num" style={{ fontSize: 12.5, fontWeight: 600, flex: 1, textAlign: "right" }}>{f.v}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+      <div style={{ marginBottom: 14 }}>
+        <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4 }}>อัปโหลดสลิปการโอนเงิน</div>
+        <div className="muted" style={{ fontSize: 12.5 }}>เหรัญญิกจะตรวจสอบสลิปและยืนยันการชำระ</div>
       </div>
 
-      {phase === "done" && (
-        <div className="fade-swap" style={{ marginTop: 16 }}>
-          <div className="card card-pad row gap12" style={{ background: "var(--ok-bg)", borderColor: "#BCE6CD", padding: 14 }}>
-            <Icon name="shield" size={22} style={{ color: "var(--ok)" }} stroke={2.2} />
-            <div style={{ flex: 1 }}>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "var(--ok)" }}>สลิปถูกต้อง · ความเชื่อมั่น 98%</div>
-              <div className="muted" style={{ fontSize: 12.5 }}>ยอดและบัญชีปลายทางตรงกับค่ากองทุนเดือนนี้ ไม่พบสลิปซ้ำ</div>
-            </div>
+      <div
+        className="card"
+        style={{ padding: 0, overflow: "hidden", textAlign: "center", cursor: "pointer",
+          borderStyle: preview ? "solid" : "dashed", borderColor: preview ? "var(--line)" : "var(--brand)" }}
+        onClick={() => fileRef.current?.click()}
+      >
+        {preview ? (
+          <img src={preview} alt="slip preview" style={{ width: "100%", maxHeight: 280, objectFit: "contain", display: "block" }} />
+        ) : (
+          <div style={{ padding: "36px 20px" }}>
+            <Icon name="upload" size={36} style={{ color: "var(--brand)" }} />
+            <div style={{ fontWeight: 600, marginTop: 10, color: "var(--brand)" }}>แตะเพื่อเลือกรูปสลิป</div>
+            <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>รองรับ JPG, PNG</div>
           </div>
-          <div className="row gap12" style={{ marginTop: 16 }}>
-            <button className="btn btn-ghost" style={{ flex: 1 }} onClick={onBack}>อัปโหลดใหม่</button>
-            <button className="btn btn-primary" style={{ flex: 2 }} onClick={onConfirm}>
-              <Icon name="checkCircle" size={18} stroke={2.2} /> ยืนยันการชำระเงิน
-            </button>
-          </div>
-        </div>
+        )}
+      </div>
+      <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }}
+        onChange={(e) => handleFile(e.target.files?.[0])} />
+
+      {preview && (
+        <button className="btn btn-ghost btn-sm mt8" style={{ fontSize: 12 }}
+          onClick={(e) => { e.stopPropagation(); setFile(null); setPreview(null); setPhase("pick"); }}>
+          <Icon name="x" size={14} /> เปลี่ยนรูป
+        </button>
       )}
+
+      {phase === "error" && errMsg && (
+        <div className="login-error" style={{ marginTop: 12 }}><Icon name="alert" size={15} stroke={2.4} />{errMsg}</div>
+      )}
+
+      <div className="row gap12 mt16">
+        <button className="btn btn-ghost" style={{ flex: 1 }} onClick={onBack}>ยกเลิก</button>
+        <button className="btn btn-primary" style={{ flex: 2 }} disabled={!file || phase === "uploading"} onClick={handleUpload}>
+          {phase === "uploading"
+            ? <><Icon name="refresh" size={16} style={{ animation: "spin 1s linear infinite" }} /> กำลังอัปโหลด…</>
+            : <><Icon name="upload" size={16} /> ส่งสลิปให้เหรัญญิก</>}
+        </button>
+      </div>
     </div>
   );
 }
+
 
 /* ---------- Pay flow sheet ---------- */
 function PayFlow({ open, onClose, onPaid }) {
