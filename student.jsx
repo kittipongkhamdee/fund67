@@ -295,7 +295,7 @@ function StudentHome({ paid, onPay, student = FM.me }) {
         </div>
       </div>
 
-      {/* mini stats */}
+      {/* 1. จ่ายครบแล้ว + ยอดที่จ่ายสะสม */}
       <div className="grid mt16" style={{ gridTemplateColumns: "1fr 1fr" }}>
         <div className="card stat reveal" style={{ animationDelay: ".06s" }}>
           <div className="stat-label"><span className="stat-ic" style={{ background: "var(--ok-bg)", color: "var(--ok)" }}><Icon name="checkCircle" size={17} /></span>จ่ายครบแล้ว</div>
@@ -307,24 +307,7 @@ function StudentHome({ paid, onPay, student = FM.me }) {
         </div>
       </div>
 
-      {/* กองทุน summary */}
-      <div className="grid mt16" style={{ gridTemplateColumns: "1fr 1fr" }}>
-        <div className="card stat reveal" style={{ animationDelay: ".18s" }}>
-          <div className="stat-label"><span className="stat-ic" style={{ background: "var(--warn-bg)", color: "var(--warn)" }}><Icon name="shield" size={17} /></span>ยอดคงเหลือที่ใช้ได้</div>
-          <div className="stat-val num">{FM.fmt(FM.totals.available)}</div>
-          <div className="stat-foot">ยอดรวมกองทุน − รายจ่าย</div>
-        </div>
-        <div className="card stat reveal" style={{ animationDelay: ".22s" }}>
-          <div className="stat-label"><span className="stat-ic" style={{ background: "var(--bad-bg)", color: "var(--bad)" }}><Icon name="arrowUp" size={17} /></span>รายจ่ายสะสม</div>
-          <div className="stat-val num">{FM.fmt(FM.totals.withdrawn)}</div>
-          <div className="stat-foot">ถอน / ใช้จ่ายทั้งหมด</div>
-        </div>
-      </div>
-
-      {/* รายการถอน / ใช้จ่ายล่าสุด */}
-      <FundExpenses />
-
-      {/* my months */}
+      {/* 2. สถานะรายเดือนของฉัน */}
       <div className="card card-pad mt16 reveal" style={{ animationDelay: ".16s" }}>
         <div className="section-title">สถานะรายเดือนของฉัน</div>
         <div className="muted" style={{ fontSize: 12.5, marginBottom: 14 }}>ปีการศึกษา 2569</div>
@@ -345,6 +328,23 @@ function StudentHome({ paid, onPay, student = FM.me }) {
           })}
         </div>
       </div>
+
+      {/* 3. ยอดคงเหลือที่ใช้ได้ + รายจ่ายสะสม */}
+      <div className="grid mt16" style={{ gridTemplateColumns: "1fr 1fr" }}>
+        <div className="card stat reveal" style={{ animationDelay: ".18s" }}>
+          <div className="stat-label"><span className="stat-ic" style={{ background: "var(--warn-bg)", color: "var(--warn)" }}><Icon name="shield" size={17} /></span>ยอดคงเหลือที่ใช้ได้</div>
+          <div className="stat-val num">{FM.fmt(FM.totals.available)}</div>
+          <div className="stat-foot">ยอดรวมกองทุน − รายจ่าย</div>
+        </div>
+        <div className="card stat reveal" style={{ animationDelay: ".22s" }}>
+          <div className="stat-label"><span className="stat-ic" style={{ background: "var(--bad-bg)", color: "var(--bad)" }}><Icon name="arrowUp" size={17} /></span>รายจ่ายสะสม</div>
+          <div className="stat-val num">{FM.fmt(FM.totals.withdrawn)}</div>
+          <div className="stat-foot">ถอน / ใช้จ่ายทั้งหมด</div>
+        </div>
+      </div>
+
+      {/* 4. รายการถอน / ใช้จ่ายกองทุน */}
+      <FundExpenses />
     </div>
   );
 }
