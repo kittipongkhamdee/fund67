@@ -202,7 +202,7 @@ function PayFlow({ open, onClose, onPaid }) {
 function StudentHome({ paid, onPay, student = FM.me }) {
   const me = student;
   const paidCount = me.pays.filter((p, i) => p === "paid").length;
-  const dueCount = FM.currentMonthIndex + 1;
+  const dueCount = FM.months.length;
   const thisStatus = paid ? "paid" : me.pays[FM.currentMonthIndex];
   const totalPaid = paidCount * FM.MONTHLY_FEE;
 
