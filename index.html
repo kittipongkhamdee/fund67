@@ -299,20 +299,19 @@ button{font-family:inherit; cursor:pointer; border:none; background:none; color:
 /* ─── Admin table → mobile card list ─── */
 @media (max-width:620px){
   .tbl-wrap{overflow:visible}
-  .tbl,.tbl thead,.tbl tbody,.tbl tr{display:block}
+  .tbl{display:block;min-width:0;width:100%}
   .tbl thead{display:none}
+  .tbl tbody{display:block;width:100%}
   .tbl tbody tr{
-    display:flex;align-items:center;
+    display:flex;align-items:center;width:100%;
     padding:12px 16px;gap:8px;
     border-bottom:1px solid rgba(0,0,0,.07);
     position:relative;
   }
   .tbl tbody tr:last-child{border-bottom:none}
   .tbl td{padding:0;border:none;font-size:13.5px}
-  /* hide #/ID separate cells on mobile */
-  .tbl td.hide-mobile{display:none}
-  /* last td (actions) floats right auto-aligned */
-  .tbl td:last-child{margin-left:auto;padding-left:8px}
+  .tbl td:first-child{flex:1;min-width:0}
+  .tbl td:last-child{flex-shrink:0}
 }
 
 /* AdminPeople stat cards: 2×2 on narrow screens */

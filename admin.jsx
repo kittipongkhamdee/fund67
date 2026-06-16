@@ -515,7 +515,7 @@ function AdminStudents() {
               <tbody>
                 {students.map((s) => (
                   <tr key={s.id}>
-                    <td style={{ width: "100%" }}>
+                    <td>
                       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                         <Avatar name={s.name} hue={s.avatarHue || 220} size={34} />
                         <div>
