@@ -156,37 +156,38 @@ function Avatar({ name, hue = 220, size = 40 }) {
   );
 }
 
-// faux-realistic QR built from a seeded matrix (safe, no external lib)
-function QRCode({ text = "promptpay", size = 188 }) {
-  const cells = 29;
-  const matrix = useMemo(() => {
-    let h = 0; for (let i = 0; i < text.length; i++) h = (h * 31 + text.charCodeAt(i)) >>> 0;
-    const rng = () => { h = (h * 1103515245 + 12345) & 0x7fffffff; return (h >> 8) / 0x7fffff; };
-    const m = Array.from({ length: cells }, () => Array(cells).fill(0));
-    const finder = (r, c) => {
-      for (let i = -1; i <= 7; i++) for (let j = -1; j <= 7; j++) {
-        const rr = r + i, cc = c + j;
-        if (rr < 0 || cc < 0 || rr >= cells || cc >= cells) continue;
-        const edge = i === 0 || i === 6 || j === 0 || j === 6;
-        const core = i >= 2 && i <= 4 && j >= 2 && j <= 4;
-        m[rr][cc] = (edge || core) ? 1 : (i >= 0 && i <= 6 && j >= 0 && j <= 6 ? 0 : m[rr][cc]);
-      }
-    };
-    for (let r = 0; r < cells; r++) for (let c = 0; c < cells; c++) m[r][c] = rng() > 0.5 ? 1 : 0;
-    finder(0, 0); finder(0, cells - 7); finder(cells - 7, 0);
-    // timing
-    for (let i = 8; i < cells - 8; i++) { m[6][i] = i % 2 === 0 ? 1 : 0; m[i][6] = i % 2 === 0 ? 1 : 0; }
-    return m;
-  }, [text]);
-  const cs = size / cells;
-  return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="qr-svg">
-      <rect width={size} height={size} fill="#fff" />
-      {matrix.map((row, r) => row.map((v, c) => v ? (
-        <rect key={r + "-" + c} x={c * cs} y={r * cs} width={cs} height={cs} rx={cs * 0.22} fill="#0b0d12" />
-      ) : null))}
-    </svg>
-  );
+// Generate real PromptPay EMVCo QR payload
+function makePromptPayPayload(phone, amount) {
+  const clean = (phone || "").replace(/[-\s]/g, "");
+  const target = clean.startsWith("0") && clean.length === 10 ? "0066" + clean.slice(1) : clean;
+  const emv = (id, val) => id + String(val.length).padStart(2, "0") + val;
+  const merchant = emv("00", "A000000677010111") + emv("01", target);
+  let payload = emv("00", "01") + emv("01", "12") + emv("29", merchant) + emv("53", "764");
+  if (amount) payload += emv("54", String(amount));
+  payload += emv("58", "TH") + "6304";
+  let crc = 0xFFFF;
+  for (const c of payload) {
+    crc ^= c.charCodeAt(0) << 8;
+    for (let i = 0; i < 8; i++) crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF;
+  }
+  return payload + crc.toString(16).toUpperCase().padStart(4, "0");
+}
+
+function QRCode({ text = "", size = 188 }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current || !window._QRLib || !text) return;
+    ref.current.innerHTML = "";
+    new window._QRLib(ref.current, {
+      text,
+      width: size,
+      height: size,
+      colorDark: "#0b0d12",
+      colorLight: "#ffffff",
+      correctLevel: window._QRLib.CorrectLevel.M,
+    });
+  }, [text, size]);
+  return <div ref={ref} style={{ width: size, height: size, display: "inline-block" }} />;
 }
 
 function Sheet({ open, onClose, children, title, maxW = 460 }) {
@@ -216,6 +217,7 @@ function Toast({ msg }) {
 
 Object.assign(window, {
   Icon, Badge, StatusDot, Ring, Avatar, QRCode, Sheet, Toast,
+  makePromptPayPayload,
   useCountUp, useMounted,
   useState, useEffect, useRef, useMemo, useCallback,
 });

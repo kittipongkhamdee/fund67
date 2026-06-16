@@ -199,7 +199,7 @@ function PayFlow({ open, onClose, onPaid }) {
                 <Icon name="qr" size={16} stroke={2.2} /> สแกนเพื่อโอนผ่านพร้อมเพย์
               </div>
               <div style={{ display: "inline-block", padding: 12, background: "#fff", borderRadius: 18, boxShadow: "var(--sh-md)" }}>
-                <QRCode text={"promptpay|" + acc.promptpay + "|" + FM.MONTHLY_FEE} size={172} />
+                <QRCode text={makePromptPayPayload(acc.promptpay, FM.MONTHLY_FEE)} size={172} />
               </div>
               <div className="muted" style={{ fontSize: 12, marginTop: 12, fontWeight: 600 }}>
                 {acc.holder}
